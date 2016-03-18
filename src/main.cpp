@@ -2,7 +2,8 @@
 #include <fstream>
 #include <sys/types.h>
 #include <errno.h>
-#include <vector>
+#include <vector> 
+#include "Simulator.h"
 using namespace std;
 
 int main(int argc, char **argv)
@@ -15,6 +16,9 @@ int main(int argc, char **argv)
 	}
 	else
 	{
+		cout << "Main start " << endl;
+		Simulator *sm = new Simulator("");
+		sm->loadHouse(NULL);
 		//Init Simulator
 	}
 

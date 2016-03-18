@@ -6,6 +6,8 @@
  */
 #ifndef HOUSE_H_
 #define HOUSE_H_
+#include <iostream>
+#include <string>
 using namespace std;
 
 
@@ -15,12 +17,12 @@ class House
 {
 public:
 
-	House(char* name, char*  Desc, int row, int col , char** Map);
+	House(string name, string  Desc, int row, int col , char** Map);
 	void PrintHouse();
 
 private:
-	char*  m_sHouseName;
-	char*  m_sHouseDesc;
+	string  m_sHouseName;
+	string  m_sHouseDesc;
 	int m_nRowNumber;
 	int m_nColNumber;
 	char **m_pMap;
