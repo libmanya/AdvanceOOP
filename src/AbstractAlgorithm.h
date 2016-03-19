@@ -24,7 +24,7 @@ public:
     // parameter stepsTillFinishing == MaxStepsAfterWinner 
     virtual void aboutToFinish(int stepsTillFinishing) = 0; 
 
-    virtual void ~AbstractAlgorithm() = 0;
+    virtual ~AbstractAlgorithm(){};
 };
 
 #endif //__ABSTRACT_ALGORITHM__H_

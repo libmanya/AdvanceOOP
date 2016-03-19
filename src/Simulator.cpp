@@ -6,33 +6,90 @@
  */
 
 #include "Simulator.h"
- //Hard Coded House
-char house1[8][10] = { { 'w','w', 'w', 'w', 'w', 'w', 'w', 'w', 'w','w' },
-{ 'w','2', '2', ' ', ' ', 'D', 'w', '5', '9','w' },
-{ 'w',' ', ' ', 'w', ' ', '1', '1', '1', '9','w' },
-{ 'w',' ', 'w', 'w', 'w', '3', 'w', 'w', ' ','w' },
-{ 'w','6', ' ', ' ', ' ', '3', 'w', ' ', ' ','w' },
-{ 'w','7', '8', 'w', ' ', ' ', 'w', ' ', ' ','w' },
-{ 'w','9', '9', 'w', ' ', ' ', 'w', ' ', ' ','w' },
-{ 'w','w', 'w', 'w', 'w', 'w', 'w', 'w', 'w','w' } };
-Simulator::Simulator(string fConfigFilePath)
+#include "Sensor.h"
+#include "NaiveAlgo.h"
+
+Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 {
 	//Read Config File to members
+	ReadConfig(sConfigFilePath);
+
+	// Load houses
+	LoadHouses(sHousesPath);
+	m_AlgoCount = 1;
+
+	m_vAlgos.assign(m_AlgoCount, nullptr);
+	m_vSensors.assign(m_AlgoCount, nullptr);
+}
+
+void Simulator::ReadConfig(const string &sConfigFilePath)
+{
+	// TODO: Read from actual config.ini file
+	map<string, int> m_config;
+	m_config["MaxSteps"] = 1200;
+	m_config["MaxStepsAfterWinner"] = 200;
+	m_config["BatteryCapacity"] = 400;
+	m_config["BatteryConsumptionRate"] = 2;
+	m_config["BatteryRachargeRate"] = 20;
+}
+
+void Simulator::LoadHouses(const string &sHousesPath)
+{
+	// TODO: add iteration over all *.house files in sHousesPath folder
+
+	m_vOriginalHouses.push_back(new House(""));
+}
+
+void Simulator::ReloadAlgorithms()
+{
+	for(AbstractAlgorithm *algo:m_vAlgos)
+		delete algo;
+
+	m_vAlgos[0] = new NaiveAlgo();
+
+	for(int i = 0; i < m_AlgoCount; i++)
+	{
+		m_vAlgos[i]->setSensor(*m_vSensors[i]);
+		m_vAlgos[i]->setConfiguration(m_config);
+	}
+}
+
+void Simulator::ReloadSensors()
+{
+	for(AbstractSensor *sensor:m_vSensors)
+		delete sensor;
+
+	for(int i = 0; i < m_AlgoCount; i++)
+		m_vSensors[i] = new Sensor(m_vHouses[i]);
+
+}
+
+void Simulator::Run()
+{
+	for(House *h : m_vOriginalHouses)
+	{
+		m_vHouses.assign(m_AlgoCount, *h);
+		ReloadSensors();
+		ReloadAlgorithms();
+
+	}
+
 }
 
 Simulator::~Simulator()
 {
 }
 
-int Simulator::loadHouse(char** map)
+// MAIN
+int main(int argsc, char **argv)
 {
-	House *newHouse = new House("House name Test",
-		"This is my test house description",
-		8, 10, (char**)house1);
+	// TODO: Process argument and pass them to simulator
 
-	newHouse->PrintHouse();
+	Simulator sim("", "");
+
+	sim.Run();
+	cout << "Here" << endl;
 	return 0;
-
 }
 
 // simulatorInit

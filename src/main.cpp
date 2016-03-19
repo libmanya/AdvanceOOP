@@ -1,4 +1,4 @@
-#include <iostream>
+/*#include <iostream>
 #include <fstream>
 #include <sys/types.h>
 #include <errno.h>
@@ -40,3 +40,4 @@ int getDirContent(vector<string> &files)
 	//closedir(dp);
 	return 0;
 }
+*/

@@ -1,21 +1,32 @@
-#include<fstream>
-#include "House.h";
-using namespace std;
+#include <fstream>
+#include <vector>
+#include "House.h"
+#include "AbstractSensor.h"
+#include "AbstractAlgorithm.h"
+#include <map>
 
+using namespace std;
 
 class Simulator
 {
 public:
 	//Simulator Ctor with (config file Path)
-	Simulator(string fConfigFilePath);
+	Simulator(const string &sConfigFilePath, const string &HousesPath);
 	~Simulator();
-
-	int loadHouse(char**);
+	void Run();
 
 private:
-	int m_nMaxSteps;
-	int m_nMaxStepsAfterWinner;
-	int m_nBatteryCapacity;
-	int m_nBatteryConsumptionRate;
-	int m_nBatteryRachargeRate;
+
+	void ReadConfig(const string &sConfigFilePath);
+	void LoadHouses(const string &sHousesPath);
+	void ReloadAlgorithms();
+	void ReloadSensors();
+
+	vector<House*> m_vOriginalHouses;
+	vector<AbstractSensor*> m_vSensors;
+	vector<AbstractAlgorithm*> m_vAlgos;
+	vector<House> m_vHouses;
+
+	map<string, int> m_config;
+	int m_AlgoCount;
 };
