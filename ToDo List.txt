@@ -1,2 +1,15 @@
+CODE:
 Add Reading from config file - DONE
 Add find config file path from OS 
+Move all config paramters name to const
+Get paramters from command line
+
+Check if house is clean
+Check if robot stuck without battery
+
+
+OTHER:
+
+create sequence diagram
+create class diagram
+

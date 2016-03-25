@@ -14,6 +14,8 @@
 using namespace std;
 
 static std::string trim(std::string& str);
+string CONFIG_FILE_NAME = "config.ini";
+string HOUSES_FILE_SUFFIX = ".house";
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 {
@@ -26,13 +28,6 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 
 void Simulator::ReadConfig(const string &sConfigFilePath)
 {
-	// TODO: Read from actual config.ini file
-	//m_config["MaxSteps"] = 1200;
-	//m_config["MaxStepsAfterWinner"] = 200;
-	//m_config["BatteryCapacity"] = 400;
-	//m_config["BatteryConsumptionRate"] = 1;
-	//m_config["BatteryRachargeRate"] = 20;
-
 	ifstream fin(sConfigFilePath);
 	string line;
 
@@ -47,7 +42,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 		m_config[trim(tokens[0])] = stoi(trim(tokens[1]));
 	}
-	
+		
 }
 
 void Simulator::LoadHouses(const string &sHousesPath)
