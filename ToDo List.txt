@@ -1,0 +1,2 @@
+Add Reading from config file - DONE
+Add find config file path from OS 

@@ -1,5 +1,6 @@
 #include "House.h"
 #include <stdexcept>
+#include <algorithm>
 
 using namespace std;
 

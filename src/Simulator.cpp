@@ -8,6 +8,12 @@
 #include "Simulator.h"
 
 #include "NaiveAlgo.h"
+#include <algorithm>
+#include <sstream>
+
+using namespace std;
+
+static std::string trim(std::string& str);
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 {
@@ -21,11 +27,27 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 void Simulator::ReadConfig(const string &sConfigFilePath)
 {
 	// TODO: Read from actual config.ini file
-	m_config["MaxSteps"] = 1200;
-	m_config["MaxStepsAfterWinner"] = 200;
-	m_config["BatteryCapacity"] = 400;
-	m_config["BatteryConsumptionRate"] = 1;
-	m_config["BatteryRachargeRate"] = 20;
+	//m_config["MaxSteps"] = 1200;
+	//m_config["MaxStepsAfterWinner"] = 200;
+	//m_config["BatteryCapacity"] = 400;
+	//m_config["BatteryConsumptionRate"] = 1;
+	//m_config["BatteryRachargeRate"] = 20;
+
+	ifstream fin(sConfigFilePath);
+	string line;
+
+	while (getline(fin, line))
+	{
+		stringstream ss(line);
+		string item;
+		vector<string> tokens;
+		while (getline(ss, item, '=')) {
+			tokens.push_back(item);
+		}
+
+		m_config[trim(tokens[0])] = stoi(trim(tokens[1]));
+	}
+	
 }
 
 void Simulator::LoadHouses(const string &sHousesPath)
@@ -188,12 +210,19 @@ void Simulator::OneSimulation::MakeStep()
 		SimulationState = FinishedCleaning;
 }
 
+static std::string trim(std::string& str)
+{
+	str.erase(0, str.find_first_not_of(' '));     
+	str.erase(str.find_last_not_of(' ') + 1);         
+	return str;
+}
+
 // MAIN
 int main(int argsc, char **argv)
 {
 	// TODO: Process argument and pass them to simulator
 
-	Simulator sim("", "");
+	Simulator sim("config.ini", "");
 
 	sim.Run();
 
