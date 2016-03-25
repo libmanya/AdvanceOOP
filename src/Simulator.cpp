@@ -6,7 +6,6 @@
  */
 
 #include "Simulator.h"
-
 #include "NaiveAlgo.h"
 #include <algorithm>
 #include <sstream>
@@ -99,7 +98,7 @@ void Simulator::Run()
 				{
 					bSomeActive = true;
 
-					if(bAnnounceWinner || (nSimulationSteps == m_config["MaxSteps"] - m_config["MaxStepsAfterWinner"]))
+					if(bAnnounceWinner || (nSimulationSteps == (m_config["MaxSteps"] - m_config["MaxStepsAfterWinner"])))
 					{
 						bAnnounceWinner = false;
 						oSim->AnnounceAboutToFinish();
