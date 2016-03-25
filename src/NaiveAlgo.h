@@ -9,17 +9,31 @@
 #define NAIVEALGO_H_
 
 #include "AbstractAlgorithm.h"
+#include <cstdlib>
+#include <ctime>
 
 class NaiveAlgo: public AbstractAlgorithm
 {
+	const AbstractSensor *m_oSensor;
+	map<string, int> m_oConfig;
+
 public:
-    void setSensor(const AbstractSensor& sensor){}
 
-    void setConfiguration(map<string, int> config){}
+	NaiveAlgo(): m_oSensor(nullptr){std::srand(std::time(0));}
 
-    Direction step(){return Direction();}
+    void setSensor(const AbstractSensor& sensor) override
+    {
+    	m_oSensor = &sensor;
+    }
 
-    void aboutToFinish(int stepsTillFinishing){}
+    void setConfiguration(map<string, int> config) override
+	{
+    	m_oConfig = config;
+	}
+
+    Direction step() override;
+
+    void aboutToFinish(int stepsTillFinishing) override;
 
     ~NaiveAlgo(){}
 };

@@ -17,7 +17,7 @@ public:
 	House& m_oHouse;
 
 	Sensor(House &oHouse):m_oHouse(oHouse){};
-	SensorInformation sense() const;
+	SensorInformation sense() const override;
 	~Sensor(){};
 };
 
