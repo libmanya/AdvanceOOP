@@ -282,10 +282,9 @@ int main(int argsc, char **argv)
 	//Concat file name
 	strConfigPath += CONFIG_FILE_NAME;
 	
-	Simulator sim(strConfigPath, "");
-
 	try
 	{
+		Simulator sim(strConfigPath, "");
 		sim.Run();
 	}
 	catch (const std::exception& e)
