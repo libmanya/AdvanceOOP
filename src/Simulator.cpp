@@ -33,10 +33,11 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 		if (sConfigFilePath.compare(CONFIG_FILE_NAME) != 0)
 		{
 			fin.open(CONFIG_FILE_NAME);
-			if (!fin)
-			{
-				throw std::runtime_error("ERROR IN NAVIGATION");
-			}
+		}
+
+		if (!fin)
+		{
+			throw "error couldn't find or open config file";
 		}
 	}
 
@@ -287,10 +288,9 @@ int main(int argsc, char **argv)
 		Simulator sim(strConfigPath, "");
 		sim.Run();
 	}
-	catch (const std::exception& e)
+	catch (const char* msg)
 	{
-		std::cout << "Caught exception: " << e.what() << '\n';
-		cout << "here" << i << endl;
+		cout << msg << endl;
 	}
 
 	return 0;
