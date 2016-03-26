@@ -36,16 +36,28 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 		for(int i = 0; i < m_nRowNumber; i++)
 			for(int j = 0; j < m_nColNumber; j++)
 			{
-				m_pMap[i][j] = house1[i][j];
-
-				if(house1[i][j] == 'D')
+				//any case this is an outer wall of the house we set Wall regardless the char from file
+				if((i == 0) || (j == 0) || i == (m_nRowNumber - 1) || j == (m_nColNumber - 1))
 				{
-					m_VacumPos.i = i;
-					m_VacumPos.j = j;
+					m_pMap[i][j] = WALL_CELL;
 				}
-				else if(house1[i][j] >= '0' && house1[i][j] <= '9')
-				{
-					m_nInitialAmounthOfDurt += house1[i][j] - '0';
+				else {
+					m_pMap[i][j] = house1[i][j];
+
+					if (house1[i][j] == DOCKING_STATION_CELL)
+					{
+						m_VacumPos.i = i;
+						m_VacumPos.j = j;
+					}
+					else if (house1[i][j] >= '0' && house1[i][j] <= '9')
+					{
+						m_nInitialAmounthOfDurt += house1[i][j] - '0';
+					}
+					// if the char is not D,W or Number we set Space char (handle worng chars in input)
+					else if (m_pMap[i][j] != WALL_CELL)
+					{
+						m_pMap[i][j] = EMPTY_CELL;
+					}
 				}
 			}
 	}
@@ -53,6 +65,7 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 	{
 		throw new invalid_argument("Loading house from actual file is not supported in exercise 1");
 	}
+	PrintHouse();
 }
 
 House::House(const House &oFrom)

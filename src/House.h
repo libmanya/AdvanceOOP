@@ -11,9 +11,10 @@
 #include "Direction.h"
 using namespace std;
 
-#define WALL_CELL 'w'
+#define WALL_CELL 'W'
 #define DOCKING_STATION_CELL 'D'
 #define VACUUM_CELL 'R'
+#define EMPTY_CELL ' '
 
 class House
 {
