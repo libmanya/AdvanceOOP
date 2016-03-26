@@ -5,12 +5,6 @@
  *      Author: iliyaaizin & Yaronlibman
  */
 
-/*#ifdef __unix__
-#define OS_Windows 0
-#elif defined(_WIN32) || defined(WIN32)    
-#define OS_Windows 1
-#endif*/
-
 #if defined(WIN32) || defined(_WIN32) 
 #define PATH_SEPARATOR '\\'
 #else 
@@ -21,6 +15,8 @@
 #include "NaiveAlgo.h"
 #include <algorithm>
 #include <sstream>
+#include <exception>
+#include <stdexcept>
 
 using namespace std;
 
@@ -57,10 +53,11 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 		if (sConfigFilePath.compare(CONFIG_FILE_NAME) != 0)
 		{
 			fin.open(CONFIG_FILE_NAME);
-			if (!fin)
-			{
-				cout << "error Couldn't find Config file" << endl;
-			}
+		}
+
+		if (!fin)
+		{
+			throw std::runtime_error("ERROR IN NAVIGATION");
 		}
 	}
 
@@ -292,26 +289,8 @@ int main(int argsc, char **argv)
 		}
 	}
 	
-	/*
-	if (OS_Windows)
-	{
-		//Add config Path dir sign id needed
-		if (strConfigPath[strConfigPath.length() - 1] != '\\')
-		{
-			strConfigPath += "\\";
-		}
-	}
-	else
-	{
-		//Add config Path dir sign id needed
-		if (strConfigPath[strConfigPath.length() - 1] != '/')
-		{
-			strConfigPath += "/";
-		}
-	}*/
-
 	//Add config Path dir sign id needed
-	if (strConfigPath[strConfigPath.length() - 1] != PATH_SEPARATOR)
+	if ((strConfigPath.length() > 0) && strConfigPath[strConfigPath.length() - 1] != PATH_SEPARATOR)
 	{
 		strConfigPath += PATH_SEPARATOR;
 	}
@@ -320,8 +299,16 @@ int main(int argsc, char **argv)
 	strConfigPath += CONFIG_FILE_NAME;
 	
 	Simulator sim(strConfigPath, "");
-
-	sim.Run();
+	
+	try 
+	{
+		sim.Run();
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << "Caught exception: " << e.what() << '\n';
+		cout << "here" << i << endl;
+	}
 
 	return 0;
 }
