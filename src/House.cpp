@@ -65,7 +65,6 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 	{
 		throw new invalid_argument("Loading house from actual file is not supported in exercise 1");
 	}
-	PrintHouse();
 }
 
 House::House(const House &oFrom)
