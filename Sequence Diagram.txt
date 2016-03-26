@@ -1,0 +1,33 @@
+URL:
+https://www.websequencediagrams.com/
+
+
+Code:
+
+title Simulator Sequence
+
+title Simulator Sequence
+
+Main -> Simulator: new Simulator
+Simulator -> Simulator:ReadConfig
+Simulator -> Simulator:loadHouses
+Simulator -> House: new House
+Main -> Simulator: Run
+Simulator -> Simulator : ReloadAlgorithms
+Simulator -> NaiveAlgo : new NaiveAlgo
+Simulator -> Simulator : ReloadSimulations
+Simulator -> OneSimulator : new OneSimulator
+OneSimulator -> NaiveAlgo : setConfiguration
+OneSimulator -> NaiveAlgo : setSensor
+Simulator -> OneSimulator : MakeStep
+OneSimulator -> NaiveAlgo : MakeStep
+OneSimulator -> House : MoveVacuum
+House -> House : TryCollectDirt
+OneSimulator -> House : GetInitialAmounthOfDirt
+OneSimulator -> House : GetDirtCollected
+Simulator -> OneSimulator : new AnnounceAboutToFinish
+Simulator -> Simulator : calcScores 
+Simulator -> House : getHouse 
+Simulator -> House : GetInitialAmounthOfDirt
+Simulator -> House : GetDirtCollected
+Simulator -> House : GetVacuumPos
