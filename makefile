@@ -1,7 +1,7 @@
 all: Simulator
 
 clean:
-	-rm Simulator Sensor.o House.o NaiveAlgo.o Simulator.o
+	-rm simulator Sensor.o House.o NaiveAlgo.o Simulator.o
 
 Simulator: Sensor.o NaiveAlgo.o House.o Simulator.o 
 	g++ -std=c++11 -Wall -pedantic -pthread Simulator.o Sensor.o House.o NaiveAlgo.o -o simulator

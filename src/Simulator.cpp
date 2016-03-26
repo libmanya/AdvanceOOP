@@ -35,7 +35,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 			fin.open(CONFIG_FILE_NAME);
 			if (!fin)
 			{
-				cout << "Error: couldn't find configuration file 'config.ini'" << endl;
+				throw std::runtime_error("ERROR IN NAVIGATION");
 			}
 		}
 	}
@@ -274,7 +274,7 @@ int main(int argsc, char **argv)
 	}
 
 	//Add config Path dir sign id needed
-	if (strConfigPath[strConfigPath.length() - 1] != PATH_SEPARATOR)
+	if ((strConfigPath.length() > 0) && strConfigPath[strConfigPath.length() - 1] != PATH_SEPARATOR)
 	{
 		strConfigPath += PATH_SEPARATOR;
 	}
@@ -284,7 +284,15 @@ int main(int argsc, char **argv)
 	
 	Simulator sim(strConfigPath, "");
 
-	sim.Run();
+	try
+	{
+		sim.Run();
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << "Caught exception: " << e.what() << '\n';
+		cout << "here" << i << endl;
+	}
 
 	return 0;
 }
