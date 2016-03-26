@@ -28,7 +28,7 @@ public:
 	House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate);
 	House(const House &oFrom);
 	House& operator=(const House &oFrom);
-	void PrintHouse() const;
+	friend ostream& operator<<(ostream& out, const House& oHouse);
 	void MoveVacuum(Direction oDir);
 
 	// Getters

@@ -2,20 +2,8 @@
  * Simulator.cpp
  *
  *  Created on: Mar 15, 2016
- *      Author: iliyaaizin & Yaronlibman
+ *      Author: Ilya Aizin & Yaron Libman
  */
-
-/*#ifdef __unix__
-#define OS_Windows 0
-#elif defined(_WIN32) || defined(WIN32)    
-#define OS_Windows 1
-#endif*/
-
-#if defined(WIN32) || defined(_WIN32) 
-#define PATH_SEPARATOR '\\'
-#else 
-#define PATH_SEPARATOR '/'
-#endif 
 
 #include "Simulator.h"
 #include "NaiveAlgo.h"
@@ -23,19 +11,6 @@
 #include <sstream>
 
 using namespace std;
-
-static std::string trim(std::string& str);
-
-const string CONFIG_PATH_FLAG = "-config";
-const string HOUSE_PATH_FLAG = "-house";
-const string CONFIG_FILE_NAME = "config.ini";
-const string HOUSES_FILE_SUFFIX = ".house";
-
-const string BATTERY_CAPACITY_KEY = "BatteryCapacity";
-const string BATTERY_CONSUMPTION_KEY = "BatteryConsumptionRate";
-const string BATTERY_RECHARGE_KEY = "BatteryRechargeRate";
-const string MAX_STEPS_KEY = "MaxSteps";
-const string MAX_STEPS_AFTER_KEY = "MaxStepsAfterWinner";
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 {
@@ -46,6 +21,7 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 	LoadHouses(sHousesPath);
 }
 
+// Reads configuration file and sets m_config keys
 void Simulator::ReadConfig(const string &sConfigFilePath)
 {
 	ifstream fin(sConfigFilePath);
@@ -59,7 +35,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 			fin.open(CONFIG_FILE_NAME);
 			if (!fin)
 			{
-				cout << "error Couldn't find Config file" << endl;
+				cout << "Error: couldn't find configuration file 'config.ini'" << endl;
 			}
 		}
 	}
@@ -78,11 +54,13 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 		
 }
 
+// Initializes houses (In exercise 1 there is only 1 hard-coded house)
 void Simulator::LoadHouses(const string &sHousesPath)
 {
 	m_vOriginalHouses.push_back(new House("", m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
 }
 
+// Reloads simulations
 void Simulator::ReloadSimulations(House *oHouse)
 {
 	for(OneSimulation *pSim : m_vSimulations)
@@ -94,6 +72,7 @@ void Simulator::ReloadSimulations(House *oHouse)
 		m_vSimulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config));
 }
 
+// Reloads algorithms
 void Simulator::ReloadAlgorithms()
 {
 	for(AbstractAlgorithm *pAlgo : m_vAlgos)
@@ -104,8 +83,10 @@ void Simulator::ReloadAlgorithms()
 	m_vAlgos.push_back(new NaiveAlgo());
 }
 
+// Runs the simulation
 void Simulator::Run()
 {
+	// For every house ran all simulations in paralel
 	for(House *pHouse : m_vOriginalHouses)
 	{
 		ReloadAlgorithms();
@@ -119,7 +100,7 @@ void Simulator::Run()
 		int lastFinnishedSteps = 0;
 		int lastFinishedActualPositionInCopmetition = 0;
 
-		//pHouse->PrintHouse();
+		// Run until some algorithms didn't finish and simulation maximum steps count was not reached
 		while(bSomeActive
 					&& nSimulationSteps < m_config[MAX_STEPS_KEY]
 					&& (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config[MAX_STEPS_AFTER_KEY]))
@@ -291,24 +272,6 @@ int main(int argsc, char **argv)
 			return 1;
 		}
 	}
-	
-	/*
-	if (OS_Windows)
-	{
-		//Add config Path dir sign id needed
-		if (strConfigPath[strConfigPath.length() - 1] != '\\')
-		{
-			strConfigPath += "\\";
-		}
-	}
-	else
-	{
-		//Add config Path dir sign id needed
-		if (strConfigPath[strConfigPath.length() - 1] != '/')
-		{
-			strConfigPath += "/";
-		}
-	}*/
 
 	//Add config Path dir sign id needed
 	if (strConfigPath[strConfigPath.length() - 1] != PATH_SEPARATOR)

@@ -6,6 +6,25 @@
 #include "Sensor.h"
 #include <map>
 
+#if defined(WIN32) || defined(_WIN32) 
+#define PATH_SEPARATOR '\\'
+#else 
+#define PATH_SEPARATOR '/'
+#endif 
+
+static std::string trim(std::string& str);
+
+const string CONFIG_PATH_FLAG = "-config";
+const string HOUSE_PATH_FLAG = "-house";
+const string CONFIG_FILE_NAME = "config.ini";
+const string HOUSES_FILE_SUFFIX = ".house";
+
+const string BATTERY_CAPACITY_KEY = "BatteryCapacity";
+const string BATTERY_CONSUMPTION_KEY = "BatteryConsumptionRate";
+const string BATTERY_RECHARGE_KEY = "BatteryRechargeRate";
+const string MAX_STEPS_KEY = "MaxSteps";
+const string MAX_STEPS_AFTER_KEY = "MaxStepsAfterWinner";
+
 using namespace std;
 
 class Simulator

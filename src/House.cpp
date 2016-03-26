@@ -19,6 +19,7 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 		m_nRowNumber = 8;
 		m_nColNumber = 10;
 
+		// hard-codded house
 		char house1[8][10+1] = {
 		"wwwwwwwwww",
 		"w22  Dw59w",
@@ -29,10 +30,12 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 		"w99w  w  w",
 		"wwwwwwwwww"};
 
+		// allocate map
 		m_pMap = new char*[m_nRowNumber];
 		for(int i = 0; i < m_nRowNumber; i++)
 			m_pMap[i] = new char[m_nColNumber];
 
+		// process cells
 		for(int i = 0; i < m_nRowNumber; i++)
 			for(int j = 0; j < m_nColNumber; j++)
 			{
@@ -41,7 +44,8 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 				{
 					m_pMap[i][j] = WALL_CELL;
 				}
-				else {
+				else 
+				{
 					m_pMap[i][j] = house1[i][j];
 
 					if (house1[i][j] == DOCKING_STATION_CELL)
@@ -74,9 +78,7 @@ House::House(const House &oFrom)
 
 	m_pMap = nullptr;
 
-	//for(int i = 0; i < m_nRowNumber; i++)
-	//	m_pMap[i] = new char[m_nColNumber];
-
+	// constract using operator =
     *this = oFrom;
 }
 
@@ -95,6 +97,7 @@ House &House::operator=(const House &oFrom)
 	m_BatteryConsumptionRate = oFrom.m_BatteryConsumptionRate;
 	m_BatteryRechargeRate = oFrom.m_BatteryRechargeRate;
 
+	// if dimentions don't agree free current map allocation and reallocate
 	if(m_nRowNumber != oFrom.m_nRowNumber || m_nColNumber != oFrom.m_nColNumber)
 	{
 		for(int i = 0; i < m_nRowNumber; i++)
@@ -110,8 +113,7 @@ House &House::operator=(const House &oFrom)
 		m_nColNumber = oFrom.m_nColNumber;
 	}
 
-
-
+	// copy map cells
 	for(int i = 0; i < m_nRowNumber; i++)
 		for(int j = 0; j < m_nColNumber; j++)
 			m_pMap[i][j] = oFrom.m_pMap[i][j];
@@ -127,27 +129,37 @@ House::~House()
 	delete[] m_pMap;
 }
 
-void House::PrintHouse() const
+/**
+ *	Print the house to stream
+ */
+ostream& operator<<(ostream& out, const House& oHouse)
 {
-	cout << "printing house" << endl;
-	cout << "name: " << m_sHouseName << endl;
-	cout << "description: " << m_sHouseDesc << endl;
-	cout << "house map:" << endl;
+	out << "=== Printing house ===" << endl;
+	out << "	Name: " << oHouse.m_sHouseName << endl;
+	out << "	Description: " << oHouse.m_sHouseDesc << endl;
+	out << "	House map:" << endl;
 
-	for (int i = 0; i < m_nRowNumber; i++)
+	for (int i = 0; i < oHouse.m_nRowNumber; i++)
 	{
-		for (int j = 0; j < m_nColNumber; j++)
+		out << '\t';
+
+		for (int j = 0; j < oHouse.m_nColNumber; j++)
 		{
-			if(m_VacumPos.i == i && m_VacumPos.j == j)
-				cout << 'R';
+			if (oHouse.m_VacumPos.i == i && oHouse.m_VacumPos.j == j)
+				out << 'R';
 			else
-				cout << m_pMap[i][j];
+				out << oHouse.m_pMap[i][j];
 		}
 
-		cout << endl;
+		out << endl;
 	}
+
+	return out;
 }
 
+/** 
+ *	If there is dirt at the current position its level will decrease by 1
+ */
 void House::TryCollectDirt()
 {
 	int i = m_VacumPos.i;
@@ -171,11 +183,13 @@ void House::MoveVacuum(Direction oDir)
 	int i = m_VacumPos.i;
 	int j = m_VacumPos.j;
 
+	// update battery level
 	if(m_pMap[i][j] == DOCKING_STATION_CELL)
 		m_BatteryLevel = std::min(m_BatteryLevel + m_BatteryRechargeRate, m_BatteryCapacity);
 	else
 		m_BatteryLevel = std::max(m_BatteryLevel - m_BatteryConsumptionRate, 0);
 
+	// update position
 	m_VacumPos.i += (oDir == Direction::South ? 1 : (oDir == Direction::North ? -1 : 0));
 	m_VacumPos.j += (oDir == Direction::East  ?  1 : (oDir == Direction::West ? -1 : 0));
 }

@@ -2,7 +2,7 @@
  * Sensor.cpp
  *
  *  Created on: 19 Mar 2016
- *      Author: Home
+ *      Author: Ilya Aizin & Yaron Libman
  */
 
 #include "Sensor.h"
