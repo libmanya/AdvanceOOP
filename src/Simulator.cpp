@@ -13,8 +13,20 @@
 using namespace std;
 
 static std::string trim(std::string& str);
+
+string CONFIG_PATH_FLAG = "-config";
+string HOUSE_PATH_FLAG = "-house";
 string CONFIG_FILE_NAME = "config.ini";
 string HOUSES_FILE_SUFFIX = ".house";
+
+string BATTERY_CAPACITY_KEY = "BatteryCapacity";
+string BATTERY_CONSUMPTION_KEY = "BatteryConsumptionRate";
+string BATTERY_RACHARGE_KEY = "BatteryRachargeRate";
+string MAX_STEPS_KEY = "MaxSteps";
+string MAX_STEPS_AFTER_KEY = "MaxStepsAfterWinner";
+
+
+
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 {
@@ -59,7 +71,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 void Simulator::LoadHouses(const string &sHousesPath)
 {
-	m_vOriginalHouses.push_back(new House("", m_config["BatteryCapacity"], m_config["BatteryConsumptionRate"], m_config["BatteryRachargeRate"]));
+	m_vOriginalHouses.push_back(new House("", m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RACHARGE_KEY]));
 }
 
 void Simulator::ReloadSimulations(House *oHouse)
@@ -101,8 +113,8 @@ void Simulator::Run()
 
 		//pHouse->PrintHouse();
 		while(bSomeActive
-					&& nSimulationSteps < m_config["MaxSteps"]
-					&& (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config["MaxStepsAfterWinner"]))
+					&& nSimulationSteps < m_config[MAX_STEPS_KEY]
+					&& (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config[MAX_STEPS_AFTER_KEY]))
 		{
 			bSomeActive = false;
 			for(OneSimulation *oSim : m_vSimulations)
@@ -111,7 +123,7 @@ void Simulator::Run()
 				{
 					bSomeActive = true;
 
-					if(bAnnounceWinner || (nSimulationSteps == (m_config["MaxSteps"] - m_config["MaxStepsAfterWinner"])))
+					if(bAnnounceWinner || (nSimulationSteps == (m_config[MAX_STEPS_KEY] - m_config[MAX_STEPS_AFTER_KEY])))
 					{
 						bAnnounceWinner = false;
 						oSim->AnnounceAboutToFinish();
@@ -236,13 +248,13 @@ int main(int argsc, char **argv)
 	// Gets Command line parameters
 	for (i = 1; i < argsc; i++)
 	{
-		if (strcmp(argv[i],"-config") == 0)
+		if (CONFIG_PATH_FLAG.compare(argv[i]) == 0)
 		{
 			if (i < (argsc - 1)) {
 				strConfigPath = argv[++i];
 			}
 		}
-		else if (strcmp(argv[i], "-house") == 0)
+		else if (HOUSE_PATH_FLAG.compare(argv[i]) == 0)
 		{
 			if (i < (argsc - 1)) {
 				strHousesPath= argv[++i];

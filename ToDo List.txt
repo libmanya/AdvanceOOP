@@ -1,9 +1,10 @@
 CODE:
-Add find config file path from OS 
-Move all config paramters name to const
-Get paramters from command line
+Add find config file path from OS - DONE
+Get paramters from command line - DONE
+Move all config paramters name to const - DONE
 
 Add comments to code
+
 
 OTHER:
 create sequence diagram
