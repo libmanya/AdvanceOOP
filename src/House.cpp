@@ -129,9 +129,7 @@ House::~House()
 	delete[] m_pMap;
 }
 
-/**
- *	Print the house to stream
- */
+// Print the house to stream
 ostream& operator<<(ostream& out, const House& oHouse)
 {
 	out << "=== Printing house ===" << endl;
@@ -157,9 +155,7 @@ ostream& operator<<(ostream& out, const House& oHouse)
 	return out;
 }
 
-/** 
- *	If there is dirt at the current position its level will decrease by 1
- */
+// If there is dirt at the current position its level will decrease by 1
 void House::TryCollectDirt()
 {
 	int i = m_VacumPos.i;
@@ -172,9 +168,7 @@ void House::TryCollectDirt()
 	}
 }
 
-/**
- *  Staying will still result in dirt collection if possible
- */
+// Staying will still result in dirt collection if possible
 void House::MoveVacuum(Direction oDir)
 {
 	// clean if there is dust at current position
