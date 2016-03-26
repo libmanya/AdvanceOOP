@@ -107,7 +107,6 @@ void Simulator::Run()
 		bool bAnnounceWinner = false;
 		int nSimulationSteps = 0;
 		int nWinnerSteps = 0;
-
 		int lastFinnishedSteps = 0;
 		int lastFinishedActualPositionInCopmetition = 0;
 
