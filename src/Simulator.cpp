@@ -30,6 +30,19 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 	ifstream fin(sConfigFilePath);
 	string line;
 
+	//check if file open with path, if not try open file in current dir
+	if (!fin)
+	{
+		if (sConfigFilePath.compare(CONFIG_FILE_NAME) != 0)
+		{
+			fin.open(CONFIG_FILE_NAME);
+			if (!fin)
+			{
+				cout << "error Couldn't find Config file" << endl;
+			}
+		}
+	}
+
 	while (getline(fin, line))
 	{
 		stringstream ss(line);
@@ -211,17 +224,49 @@ static std::string trim(std::string& str)
 	return str;
 }
 
+
+
 // MAIN
 int main(int argsc, char **argv)
 {
-	// TODO: Process argument and pass them to simulator
+	int i;
+	string strConfigPath = "";
+	string strHousesPath = "";
 
-	Simulator sim("config.ini", "");
+	// Gets Command line parameters
+	for (i = 1; i < argsc; i++)
+	{
+		if (strcmp(argv[i],"-config") == 0)
+		{
+			if (i < (argsc - 1)) {
+				strConfigPath = argv[++i];
+			}
+		}
+		else if (strcmp(argv[i], "-house") == 0)
+		{
+			if (i < (argsc - 1)) {
+				strHousesPath= argv[++i];
+			}
+		}
+	}
+
+	//Add config Path dir sign id needed
+	if (strConfigPath.at(strConfigPath.length() - 1) != '\\')
+	{
+		strConfigPath += "\\";
+	}
+
+	//Concat file name
+	strConfigPath += CONFIG_FILE_NAME;
+	
+	Simulator sim(strConfigPath, "");
 
 	sim.Run();
 
 	return 0;
 }
+
+
 
 // simulatorInit
 
