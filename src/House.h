@@ -20,12 +20,8 @@ class House
 {
 public:
 
-	string m_sHouseName;
-	string m_sHouseDesc;
-
-	class Point
+	struct Point
 	{
-	public:
 		int i, j;
 	};
 
@@ -39,22 +35,27 @@ public:
 	const Point& GetVacuumPos() 		const { return m_VacumPos; };
 	int GetColNumber() 					const { return m_nColNumber; };
 	int GetRowNumber() 					const { return m_nRowNumber; };
-	const char* operator[](const int i) const { return m_pMap[i]; };   // for House[][] support (read only access to sells)
-	int GetInitialAmounthOfDirt() 		const { return m_nInitialAmounthOfDurt; };
-	int GetDirtCollected() 				const { return m_nDurtCollected; }
+	const char* operator[](int i)		const { return m_pMap[i]; };   // for House[][] support (read only access to sells)
+	int GetInitialAmounthOfDirt() 		const { return m_nInitialAmounthOfDirt; };
+	int GetDirtCollected() 				const { return m_nDirtCollected; }
 	int GetBatteryLevel() 				const { return m_BatteryLevel; };
+	const string& GetHouseName()		const { return m_sHouseName; };
+	const string& GetHouseDesc()		const { return m_sHouseDesc; };
 
 	~House();
 
 private:
+
+	string m_sHouseName;
+	string m_sHouseDesc;
 	Point m_VacumPos;
 	int m_nRowNumber;
 	int m_nColNumber;
 	char **m_pMap;
 
 	// Dirt
-	int m_nInitialAmounthOfDurt;
-	int m_nDurtCollected = 0;
+	int m_nInitialAmounthOfDirt;
+	int m_nDirtCollected = 0;
 
 	// Battery
 	int m_BatteryLevel;

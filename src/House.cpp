@@ -6,7 +6,7 @@ using namespace std;
 
 House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate)
 {
-	m_nInitialAmounthOfDurt = 0;
+	m_nInitialAmounthOfDirt = 0;
 	m_BatteryLevel = nBatteryCapacity;
 	m_BatteryCapacity = nBatteryCapacity;
 	m_BatteryConsumptionRate = nBatteryConsumptionRate;
@@ -51,7 +51,7 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 					}
 					else if (house1[i][j] >= '0' && house1[i][j] <= '9')
 					{
-						m_nInitialAmounthOfDurt += house1[i][j] - '0';
+						m_nInitialAmounthOfDirt += house1[i][j] - '0';
 					}
 					// if the char is not D,W or Number we set Space char (handle worng chars in input)
 					else if (m_pMap[i][j] != WALL_CELL)
@@ -88,8 +88,8 @@ House &House::operator=(const House &oFrom)
 	m_sHouseName = oFrom.m_sHouseName;
 	m_sHouseDesc = oFrom.m_sHouseDesc;
 	m_VacumPos = oFrom.m_VacumPos;
-	m_nInitialAmounthOfDurt = oFrom.m_nInitialAmounthOfDurt;
-	m_nDurtCollected = oFrom.m_nDurtCollected;
+	m_nInitialAmounthOfDirt = oFrom.m_nInitialAmounthOfDirt;
+	m_nDirtCollected = oFrom.m_nDirtCollected;
 	m_BatteryLevel = oFrom.m_BatteryLevel;
 	m_BatteryCapacity = oFrom.m_BatteryCapacity;
 	m_BatteryConsumptionRate = oFrom.m_BatteryConsumptionRate;
@@ -156,7 +156,7 @@ void House::TryCollectDirt()
 	if(m_pMap[i][j] >= '1' && m_pMap[i][j] <= '9')
 	{
 		m_pMap[i][j]--;
-		m_nDurtCollected++;
+		m_nDirtCollected++;
 	}
 }
 

@@ -19,7 +19,7 @@ class NaiveAlgo: public AbstractAlgorithm
 
 public:
 
-	NaiveAlgo(): m_oSensor(nullptr){std::srand(std::time(0));}
+	NaiveAlgo(): m_oSensor(nullptr){std::srand((unsigned int)std::time(0));}
 
     void setSensor(const AbstractSensor& sensor) override
     {

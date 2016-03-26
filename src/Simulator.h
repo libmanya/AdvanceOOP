@@ -23,10 +23,7 @@ public:
 	public:
 		enum SimulationStateType{ FinishedCleaning, OutOfBattery, AlgoMadeIllegalMove, Running};
 
-		int m_nActualPositionInCompetition = 0;
-		SimulationStateType SimulationState;
-
-		OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo,map<string, int> &oConfig): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
+		OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo, map<string, int> &oConfig): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
 		{
 			m_pAlgo->setConfiguration(m_config);
 			m_pAlgo->setSensor(m_oSensor);
@@ -34,17 +31,24 @@ public:
 			SimulationState = Running;
 		};
 		void MakeStep();
-		int getSteps() const { return m_nSteps; };
-		const House& getHouse(){ return m_oHouse; };
-		void AnnounceAboutToFinish(){ m_pAlgo->aboutToFinish(m_config["MaxStepsAfterWinner"]); };
+		int getSteps()							const	{ return m_nSteps; };
+		const House& getHouse()					const	{ return m_oHouse; };
+		void AnnounceAboutToFinish()					{ m_pAlgo->aboutToFinish(m_config["MaxStepsAfterWinner"]); };
+		int GetActualPositionInCompetition()	const	{ return m_nActualPositionInCompetition; }
+		SimulationStateType GetSimulationState()const	{ return SimulationState; }
+		int CalculateScore(int nWinnerSteps,	bool bIsWinner, int nSimulationSteps) 
+												const;
+		void SetActualPositionInCompetition(int nPos)	{ m_nActualPositionInCompetition = nPos;  }
 
 	private:
 
+		SimulationStateType SimulationState;
 		House m_oHouse;
 		Sensor m_oSensor;
 		AbstractAlgorithm* m_pAlgo;
 		map<string, int> &m_config;
 		int m_nSteps = 0;
+		int m_nActualPositionInCompetition = 0;
 	};
 
 private:
@@ -52,7 +56,6 @@ private:
 	void ReadConfig(const string &sConfigFilePath);
 	void LoadHouses(const string &sHousesPath);
 	void ReloadAlgorithms();
-	void ReloadSensors();
 	void ReloadSimulations(House *oHouse);
 
 	vector<OneSimulation*> m_vSimulations;

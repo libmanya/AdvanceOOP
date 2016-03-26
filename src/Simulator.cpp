@@ -5,11 +5,17 @@
  *      Author: iliyaaizin & Yaronlibman
  */
 
-#ifdef __unix__
+/*#ifdef __unix__
 #define OS_Windows 0
 #elif defined(_WIN32) || defined(WIN32)    
 #define OS_Windows 1
-#endif
+#endif*/
+
+#if defined(WIN32) || defined(_WIN32) 
+#define PATH_SEPARATOR '\\'
+#else 
+#define PATH_SEPARATOR '/'
+#endif 
 
 #include "Simulator.h"
 #include "NaiveAlgo.h"
@@ -122,7 +128,7 @@ void Simulator::Run()
 			for(OneSimulation *oSim : m_vSimulations)
 			{
 
-				if(oSim->SimulationState == OneSimulation::Running)
+				if(oSim->GetSimulationState() == OneSimulation::Running)
 				{
 					bSomeActive = true;
 
@@ -134,10 +140,10 @@ void Simulator::Run()
 
 					oSim->MakeStep();
 
-					if(oSim->SimulationState == OneSimulation::FinishedCleaning)
+					if(oSim->GetSimulationState() == OneSimulation::FinishedCleaning)
 					{
 						// calculate Actual Position In Competition according to forum post by Amir
-						oSim->m_nActualPositionInCompetition = lastFinishedActualPositionInCopmetition + (lastFinnishedSteps == nSimulationSteps + 1 ? 0 : 1);
+						oSim->SetActualPositionInCompetition(lastFinishedActualPositionInCopmetition + (lastFinnishedSteps == nSimulationSteps + 1 ? 0 : 1));
 						lastFinnishedSteps = nSimulationSteps + 1;  // +1 because winner was declared after the step
 
 						if(!bIsWinner)
@@ -157,28 +163,12 @@ void Simulator::Run()
 			nSimulationSteps++;
 		}
 
+		// calculate score
 		for(OneSimulation *oSim : m_vSimulations)
 		{
-			// calculate score
-			int nPositionInCopmetition;
 
-			if(oSim->SimulationState == OneSimulation::FinishedCleaning)
-				nPositionInCopmetition = std::min(4, oSim->m_nActualPositionInCompetition);
-			else
-				nPositionInCopmetition = 10;
-
-			if(!bIsWinner)
-				nWinnerSteps = nSimulationSteps;
-
-			int nScore;
-			nScore = std::max(0,
-					2000
-					- (nPositionInCopmetition - 1) * 50
-					+ (nWinnerSteps - oSim->getSteps()) * 10
-					- (oSim->getHouse().GetInitialAmounthOfDirt() - oSim->getHouse().GetDirtCollected()) * 3
-					+ (oSim->getHouse()[oSim->getHouse().GetVacuumPos().i][oSim->getHouse().GetVacuumPos().j] == DOCKING_STATION_CELL ? 50: -200));
-
-			cout << oSim->getHouse().m_sHouseName << '\t' << nScore << endl;
+			int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
+			cout << oSim->getHouse().GetHouseName() << '\t' << nScore << endl;
 		}
 	}
 }
@@ -227,6 +217,45 @@ void Simulator::OneSimulation::MakeStep()
 		SimulationState = FinishedCleaning;
 }
 
+int Simulator::OneSimulation::CalculateScore(int nWinnerSteps, bool bIsWinner, int nSimulationSteps) const
+{
+	int nScore;
+	if (SimulationState == OneSimulation::AlgoMadeIllegalMove)
+		nScore = 0;
+	else
+	{
+		// calculate position in competion
+		int nPositionInCompetition;
+		if (SimulationState == OneSimulation::FinishedCleaning)
+			nPositionInCompetition = std::min(4, m_nActualPositionInCompetition);
+		else
+			nPositionInCompetition = 10;
+
+		// if no one won set nWinnerSteps to nSimulationSteps
+		if (!bIsWinner)
+			nWinnerSteps = nSimulationSteps;
+
+		// calculate this simulation steps
+		int nThisSimulationSteps;
+		if (SimulationState == OneSimulation::OutOfBattery)
+			nThisSimulationSteps = nSimulationSteps;
+		else
+			nThisSimulationSteps = m_nSteps;
+
+		// check wether the vacuum is in docking station
+		bool bIsBackToDockingStation = m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] == DOCKING_STATION_CELL;
+
+		nScore = std::max(0,
+			2000
+			- (nPositionInCompetition - 1) * 50
+			+ (nWinnerSteps - nThisSimulationSteps) * 10
+			- (m_oHouse.GetInitialAmounthOfDirt() - m_oHouse.GetDirtCollected()) * 3
+			+ (bIsBackToDockingStation ? 50 : -200));
+	}
+
+	return nScore;
+}
+
 static std::string trim(std::string& str)
 {
 	str.erase(0, str.find_first_not_of(' '));     
@@ -248,18 +277,22 @@ int main(int argsc, char **argv)
 	{
 		if (CONFIG_PATH_FLAG.compare(argv[i]) == 0)
 		{
-			if (i < (argsc - 1)) {
+			if (i < (argsc - 1))
 				strConfigPath = argv[++i];
-			}
 		}
 		else if (HOUSE_PATH_FLAG.compare(argv[i]) == 0)
 		{
-			if (i < (argsc - 1)) {
-				strHousesPath= argv[++i];
-			}
+			if (i < (argsc - 1))
+				strHousesPath = argv[++i];
+		}
+		else
+		{
+			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>]" << endl;
+			return 1;
 		}
 	}
 	
+	/*
 	if (OS_Windows)
 	{
 		//Add config Path dir sign id needed
@@ -275,6 +308,12 @@ int main(int argsc, char **argv)
 		{
 			strConfigPath += "/";
 		}
+	}*/
+
+	//Add config Path dir sign id needed
+	if (strConfigPath[strConfigPath.length() - 1] != PATH_SEPARATOR)
+	{
+		strConfigPath += PATH_SEPARATOR;
 	}
 
 	//Concat file name
