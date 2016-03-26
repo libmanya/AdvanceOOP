@@ -4,7 +4,9 @@ Get paramters from command line - DONE
 Move all config paramters name to const - DONE
 
 Add comments to code
+create makefile
 
+Check issue with make steps - not stoping in the right time
 
 OTHER:
 create sequence diagram

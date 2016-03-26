@@ -106,7 +106,7 @@ void Simulator::Run()
 		bool bIsWinner = false;
 		bool bAnnounceWinner = false;
 		int nSimulationSteps = 0;
-		int nWinnerSteps;
+		int nWinnerSteps = 0;
 
 		int lastFinnishedSteps = 0;
 		int lastFinishedActualPositionInCopmetition = 0;
@@ -177,12 +177,7 @@ void Simulator::Run()
 
 			cout << oSim->getHouse().m_sHouseName << '\t' << nScore << endl;
 		}
-
-		//m_vSimulations[0]->getHouse().PrintHouse();
-		//cout << m_vSimulations[0]->getSteps() << endl;
-
 	}
-
 }
 
 Simulator::~Simulator()
@@ -263,7 +258,7 @@ int main(int argsc, char **argv)
 	}
 
 	//Add config Path dir sign id needed
-	if (strConfigPath.at(strConfigPath.length() - 1) != '\\')
+	if (strConfigPath[strConfigPath.length() - 1] != '\\')
 	{
 		strConfigPath += "\\";
 	}
@@ -277,22 +272,3 @@ int main(int argsc, char **argv)
 
 	return 0;
 }
-
-
-
-// simulatorInit
-
-
-// Run
-	// read config.init
-	// load and create houses
-	// init sensors
-	// init algorithms
-	// run all algorithms on all houses
-		// run single step on all the algos
-		// check wining or illegal steps conditions
-			//Declare winner
-
-// RunSingleStep (on a single house)
-
-// getScore
