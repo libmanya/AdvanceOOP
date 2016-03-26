@@ -114,12 +114,14 @@ void Simulator::Run()
 				{
 					bSomeActive = true;
 
+					// When there is a winner or steps == MaxSteps - MaxStepsAfterWinner algorithm should receive AboutToFinish announcement
 					if(bAnnounceWinner || (nSimulationSteps == (m_config[MAX_STEPS_KEY] - m_config[MAX_STEPS_AFTER_KEY])))
 					{
 						bAnnounceWinner = false;
 						oSim->AnnounceAboutToFinish();
 					}
 
+					// Make a single simulation step
 					oSim->MakeStep();
 
 					if(oSim->GetSimulationState() == OneSimulation::FinishedCleaning)
@@ -128,24 +130,21 @@ void Simulator::Run()
 						oSim->SetActualPositionInCompetition(lastFinishedActualPositionInCopmetition + (lastFinnishedSteps == nSimulationSteps + 1 ? 0 : 1));
 						lastFinnishedSteps = nSimulationSteps + 1;  // +1 because winner was declared after the step
 
+						// if there was no winner unltil now: save winner steps and emember to announce winner at the beginning of the next round
 						if(!bIsWinner)
 						{
 							bIsWinner = true;
 							nWinnerSteps = lastFinnishedSteps;
 							bAnnounceWinner = true; 		// remember to announce winner at the beginning of the next round
 						}
-
-						cout << "One Finished" << endl;
 					}
-
 				}
-
 			}
 
 			nSimulationSteps++;
 		}
 
-		// calculate score
+		// calculate and print score
 		for(OneSimulation *oSim : m_vSimulations)
 		{
 
@@ -167,6 +166,7 @@ Simulator::~Simulator()
 		delete pHouse;
 }
 
+// Make single simulation step
 void Simulator::OneSimulation::MakeStep()
 {
 	if(m_oHouse.GetBatteryLevel() == 0)
@@ -195,10 +195,12 @@ void Simulator::OneSimulation::MakeStep()
 
 	m_nSteps++;
 
+	// if all dirt collected mark as finished
 	if(m_oHouse.GetDirtCollected() == m_oHouse.GetInitialAmounthOfDirt())
 		SimulationState = FinishedCleaning;
 }
 
+// Calculate score
 int Simulator::OneSimulation::CalculateScore(int nWinnerSteps, bool bIsWinner, int nSimulationSteps) const
 {
 	int nScore;
@@ -244,8 +246,6 @@ static std::string trim(std::string& str)
 	str.erase(str.find_last_not_of(' ') + 1);         
 	return str;
 }
-
-
 
 // MAIN
 int main(int argsc, char **argv)
