@@ -21,7 +21,7 @@ string HOUSES_FILE_SUFFIX = ".house";
 
 string BATTERY_CAPACITY_KEY = "BatteryCapacity";
 string BATTERY_CONSUMPTION_KEY = "BatteryConsumptionRate";
-string BATTERY_RACHARGE_KEY = "BatteryRachargeRate";
+string BATTERY_RECHARGE_KEY = "BatteryRechargeRate";
 string MAX_STEPS_KEY = "MaxSteps";
 string MAX_STEPS_AFTER_KEY = "MaxStepsAfterWinner";
 
@@ -71,7 +71,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 void Simulator::LoadHouses(const string &sHousesPath)
 {
-	m_vOriginalHouses.push_back(new House("", m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RACHARGE_KEY]));
+	m_vOriginalHouses.push_back(new House("", m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
 }
 
 void Simulator::ReloadSimulations(House *oHouse)
