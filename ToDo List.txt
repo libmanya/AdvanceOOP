@@ -2,6 +2,9 @@ CODE:
 Add find config file path from OS - DONE
 Get paramters from command line - DONE
 Move all config paramters name to const - DONE
+Add 'w' to all border cells at house creation
+Score 0 if Algorithm made an illigal step
+
 
 Add comments to code
 create makefile
