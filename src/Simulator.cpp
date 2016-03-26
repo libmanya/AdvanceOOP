@@ -5,6 +5,12 @@
  *      Author: iliyaaizin & Yaronlibman
  */
 
+#ifdef __unix__
+#define OS_Windows 0
+#elif defined(_WIN32) || defined(WIN32)    
+#define OS_Windows 1
+#endif
+
 #include "Simulator.h"
 #include "NaiveAlgo.h"
 #include <algorithm>
@@ -115,6 +121,7 @@ void Simulator::Run()
 			bSomeActive = false;
 			for(OneSimulation *oSim : m_vSimulations)
 			{
+
 				if(oSim->SimulationState == OneSimulation::Running)
 				{
 					bSomeActive = true;
@@ -252,11 +259,22 @@ int main(int argsc, char **argv)
 			}
 		}
 	}
-
-	//Add config Path dir sign id needed
-	if (strConfigPath[strConfigPath.length() - 1] != '\\')
+	
+	if (OS_Windows)
 	{
-		strConfigPath += "\\";
+		//Add config Path dir sign id needed
+		if (strConfigPath[strConfigPath.length() - 1] != '\\')
+		{
+			strConfigPath += "\\";
+		}
+	}
+	else
+	{
+		//Add config Path dir sign id needed
+		if (strConfigPath[strConfigPath.length() - 1] != '/')
+		{
+			strConfigPath += "/";
+		}
 	}
 
 	//Concat file name
