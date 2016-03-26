@@ -1,7 +1,6 @@
 url : http://yuml.me/
 
 // class diagram code
-
 [Simulator|arrOneSimulator:OneSimulator;arrHouses:House;arrAlgorithms:abstractAlgo;configPath:string;houseFilePath:string|Run()]
 [OneSimulator|house:House;Sensor:Sensor;algo:abstractAlgo;simState:SimulationStateType|makeStep();getSteps();getHouse();AnnounceAboutToFinish()]
 [House|houseName:string;houseDesc:string|moveVacuum();printHouse();GetVacuumPos();GetInitialAmounthOfDirt;GetDirtCollected();GetBatteryLevel()]
@@ -16,4 +15,5 @@ url : http://yuml.me/
 [AbstractSensor] ^- [Sensor]
 [OneSimulator]<>->[House]
 [OneSimulator]<>->[Sensor]
- 	
+[Direction]<-[House]
+[SensorInformation] ->[AbstractSensor]	
