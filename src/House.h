@@ -23,7 +23,7 @@ public:
 	struct Point
 	{
 		int i, j;
-	};
+	};	
 
 	House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate);
 	House(const House &oFrom);

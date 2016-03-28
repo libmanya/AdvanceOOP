@@ -16,16 +16,16 @@ Main -> Simulator: Run
 Simulator -> Simulator : ReloadAlgorithms
 Simulator -> NaiveAlgo : new NaiveAlgo
 Simulator -> Simulator : ReloadSimulations
-Simulator -> OneSimulator : new OneSimulator
-OneSimulator -> NaiveAlgo : setConfiguration
-OneSimulator -> NaiveAlgo : setSensor
-Simulator -> OneSimulator : MakeStep
-OneSimulator -> NaiveAlgo : MakeStep
-OneSimulator -> House : MoveVacuum
+Simulator -> OneSimulation : new OneSimulation
+OneSimulation -> NaiveAlgo : setConfiguration
+OneSimulation -> NaiveAlgo : setSensor
+Simulator -> OneSimulation : MakeStep
+OneSimulation -> NaiveAlgo : MakeStep
+OneSimulation -> House : MoveVacuum
 House -> House : TryCollectDirt
-OneSimulator -> House : GetInitialAmounthOfDirt
-OneSimulator -> House : GetDirtCollected
-Simulator -> OneSimulator : new AnnounceAboutToFinish
+OneSimulation -> House : GetInitialAmounthOfDirt
+OneSimulation -> House : GetDirtCollected
+Simulator -> OneSimulation : new AnnounceAboutToFinish
 Simulator -> Simulator : calcScores 
 Simulator -> House : getHouse 
 Simulator -> House : GetInitialAmounthOfDirt
