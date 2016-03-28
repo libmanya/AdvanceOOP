@@ -19,21 +19,24 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 		m_nRowNumber = 8;
 		m_nColNumber = 10;
 
-		// hard-codded house
-		char house1[8][10+1] = {
-		"wwwwwwwwww",
-		"w22  Dw59w",
-		"w  w 1119w",
-		"w www3ww w",
-		"w6   3w  w",
-		"w78w  w  w",
-		"w99w  w  w",
-		"wwwwwwwwww"};
+		// hard-codded house	
+		char house1[8][10 + 1] = {
+		"WWWWWWWWWW",
+		"W22   D59W",
+		"W W",
+		"W WWW3WW W",
+		"W6   3W  W",
+		"W78W  W  W",
+		"W99W  W  W",
+		"WWWWWWWWWW"};
 
 		// allocate map
 		m_pMap = new char*[m_nRowNumber];
 		for(int i = 0; i < m_nRowNumber; i++)
 			m_pMap[i] = new char[m_nColNumber];
+
+		int nDockingCount = 0;
+		int nDockingOnPerimeter = 0;
 
 		// process cells
 		for(int i = 0; i < m_nRowNumber; i++)
@@ -42,6 +45,11 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 				//any case this is an outer wall of the house we set Wall regardless the char from file
 				if((i == 0) || (j == 0) || i == (m_nRowNumber - 1) || j == (m_nColNumber - 1))
 				{
+					if(house1[i][j] == DOCKING_STATION_CELL)
+					{
+						nDockingOnPerimeter++;
+					}
+					
 					m_pMap[i][j] = WALL_CELL;
 				}
 				else 
@@ -52,6 +60,7 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 					{
 						m_VacumPos.i = i;
 						m_VacumPos.j = j;
+						nDockingCount++;
 					}
 					else if (house1[i][j] >= '0' && house1[i][j] <= '9')
 					{
@@ -64,6 +73,17 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 					}
 				}
 			}
+	
+		if (nDockingCount == 0) {
+			if (nDockingOnPerimeter > 0) {
+				throw "House Error: house should conatin a docking station not on perimeter";
+			}
+
+			throw "House Error: house should conatin a docking station";
+		}
+		else if (nDockingCount > 1) {
+			throw "House Error: house can contain only one docking station";
+		}
 	}
 	else
 	{
