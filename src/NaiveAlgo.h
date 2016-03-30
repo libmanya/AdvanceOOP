@@ -8,6 +8,7 @@
 #ifndef NAIVEALGO_H_
 #define NAIVEALGO_H_
 
+#include "Direction.h"
 #include "AbstractAlgorithm.h"
 #include <cstdlib>
 #include <ctime>

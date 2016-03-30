@@ -189,21 +189,25 @@ void House::TryCollectDirt()
 }
 
 // Staying will still result in dirt collection if possible
-void House::MoveVacuum(Direction oDir)
+void House::TryMoveVacuum(Direction oDir)
 {
-	// clean if there is dust at current position
-	this->TryCollectDirt();
-
 	int i = m_VacumPos.i;
 	int j = m_VacumPos.j;
 
-	// update battery level
-	if(m_pMap[i][j] == DOCKING_STATION_CELL)
-		m_BatteryLevel = std::min(m_BatteryLevel + m_BatteryRechargeRate, m_BatteryCapacity);
-	else
-		m_BatteryLevel = std::max(m_BatteryLevel - m_BatteryConsumptionRate, 0);
+	if(m_BatteryLevel > 0 || m_pMap[i][j] == DOCKING_STATION_CELL)
+	{ 	
+		// clean if there is dust at current position
+		this->TryCollectDirt();
 
-	// update position
-	m_VacumPos.i += (oDir == Direction::South ? 1 : (oDir == Direction::North ? -1 : 0));
-	m_VacumPos.j += (oDir == Direction::East  ?  1 : (oDir == Direction::West ? -1 : 0));
+		// update position
+		m_VacumPos.i += (oDir == Direction::South ? 1 : (oDir == Direction::North ? -1 : 0));
+		m_VacumPos.j += (oDir == Direction::East ? 1 : (oDir == Direction::West ? -1 : 0));
+
+		// update battery level
+		if (m_pMap[i][j] == DOCKING_STATION_CELL)
+			m_BatteryLevel = std::min(m_BatteryLevel + m_BatteryRechargeRate, m_BatteryCapacity);
+		else
+			m_BatteryLevel = std::max(m_BatteryLevel - m_BatteryConsumptionRate, 0);
+	}
 }
+

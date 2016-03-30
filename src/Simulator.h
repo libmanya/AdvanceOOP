@@ -1,5 +1,6 @@
 #include <fstream>
 #include <vector>
+#include "Direction.h"
 #include "House.h"
 #include "AbstractSensor.h"
 #include "AbstractAlgorithm.h"
@@ -40,7 +41,7 @@ public:
 	{
 
 	public:
-		enum SimulationStateType{ FinishedCleaning, OutOfBattery, AlgoMadeIllegalMove, Running};
+		enum SimulationStateType{ Finished, OutOfBattery, AlgoMadeIllegalMove, Running };
 
 		OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo, map<string, int> &oConfig): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
 		{

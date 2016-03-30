@@ -98,8 +98,8 @@ void Simulator::Run()
 		bool bAnnounceWinner = false;
 		int nSimulationSteps = 0;
 		int nWinnerSteps = 0;
-		int lastFinnishedSteps = 0;
-		int lastFinishedActualPositionInCopmetition = 0;
+		OneSimulation* lastFinnished = nullptr;
+		int nFinishedCount = 0;
 
 		// Run until some algorithms didn't finish and simulation maximum steps count was not reached
 		while(bSomeActive
@@ -124,19 +124,32 @@ void Simulator::Run()
 					// Make a single simulation step
 					oSim->MakeStep();
 
-					if(oSim->GetSimulationState() == OneSimulation::FinishedCleaning)
+					if(oSim->GetSimulationState() == OneSimulation::Finished)
 					{
 						// calculate Actual Position In Competition according to forum post by Amir
-						oSim->SetActualPositionInCompetition(lastFinishedActualPositionInCopmetition + (lastFinnishedSteps == nSimulationSteps + 1 ? 0 : 1));
-						lastFinnishedSteps = nSimulationSteps + 1;  // +1 because winner was declared after the step
+						if (lastFinnished != nullptr) // someone already won
+						{
+							if (lastFinnished->getSteps() == oSim->getSteps()) // someone finished on the same step
+								oSim->SetActualPositionInCompetition(lastFinnished->GetActualPositionInCompetition());  // set the same ActualPositionInCompetition
+							else
+								oSim->SetActualPositionInCompetition(nFinishedCount + 1);
+						}
+						else // first to finish
+						{ 
+							oSim->SetActualPositionInCompetition(1);
+						}
 
-						// if there was no winner unltil now: save winner steps and emember to announce winner at the beginning of the next round
+						lastFinnished = oSim;
+
+						// if there was no winner unltil now: save winner steps and remember to announce winner at the beginning of the next round
 						if(!bIsWinner)
 						{
 							bIsWinner = true;
-							nWinnerSteps = lastFinnishedSteps;
+							nWinnerSteps = oSim->getSteps();
 							bAnnounceWinner = true; 		// remember to announce winner at the beginning of the next round
 						}
+
+						nFinishedCount++;
 					}
 				}
 			}
@@ -149,7 +162,7 @@ void Simulator::Run()
 		{
 
 			int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
-			cout << oSim->getHouse().GetHouseName() << '\t' << nScore << endl;
+			cout << nScore << endl;
 		}
 	}
 }
@@ -169,12 +182,6 @@ Simulator::~Simulator()
 // Make single simulation step
 void Simulator::OneSimulation::MakeStep()
 {
-	if(m_oHouse.GetBatteryLevel() == 0)
-	{
-			SimulationState = OutOfBattery;
-			return;
-	}
-
 	Direction oDir = m_pAlgo->step();
 
 	const int i = m_oHouse.GetVacuumPos().i;
@@ -191,13 +198,20 @@ void Simulator::OneSimulation::MakeStep()
 	}
 
 	// update vacuum position
-	m_oHouse.MoveVacuum(oDir);
+	m_oHouse.TryMoveVacuum(oDir);
 
 	m_nSteps++;
 
-	// if all dirt collected mark as finished
-	if(m_oHouse.GetDirtCollected() == m_oHouse.GetInitialAmounthOfDirt())
-		SimulationState = FinishedCleaning;
+	// check battery level
+	if (m_oHouse.GetBatteryLevel() == 0 && m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] != DOCKING_STATION_CELL)
+	{ 
+		SimulationState = OutOfBattery;
+		return;
+	}
+
+	// if all dirt collected and back to docking station mark as finished
+	if(m_oHouse.GetDirtCollected() == m_oHouse.GetInitialAmounthOfDirt() && m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] == DOCKING_STATION_CELL)
+		SimulationState = Finished;
 }
 
 // Calculate score
@@ -210,7 +224,7 @@ int Simulator::OneSimulation::CalculateScore(int nWinnerSteps, bool bIsWinner, i
 	{
 		// calculate position in competion
 		int nPositionInCompetition;
-		if (SimulationState == OneSimulation::FinishedCleaning)
+		if (SimulationState == OneSimulation::Finished)
 			nPositionInCompetition = std::min(4, m_nActualPositionInCompetition);
 		else
 			nPositionInCompetition = 10;

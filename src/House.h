@@ -29,7 +29,7 @@ public:
 	House(const House &oFrom);
 	House& operator=(const House &oFrom);
 	friend ostream& operator<<(ostream& out, const House& oHouse);
-	void MoveVacuum(Direction oDir);
+	void TryMoveVacuum(Direction oDir);
 
 	// Getters
 	const Point& GetVacuumPos() 		const { return m_VacumPos; };
