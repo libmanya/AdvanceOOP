@@ -2,7 +2,7 @@
  * House.h
  *
  *  Created on: Mar 15, 2016
- *      Author: iliyaaizin
+ *      Author: iliyaaizin 323500942 & yaronlibman 302730072
  */
 #ifndef HOUSE_H_
 #define HOUSE_H_

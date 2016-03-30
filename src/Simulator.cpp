@@ -2,7 +2,7 @@
  * Simulator.cpp
  *
  *  Created on: Mar 15, 2016
- *      Author: Ilya Aizin & Yaron Libman
+ *      Author: iliyaaizin 323500942 & yaronlibman 302730072
  */
 
 #include "Simulator.h"

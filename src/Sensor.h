@@ -2,7 +2,7 @@
  * Sensor.h
  *
  *  Created on: 19 Mar 2016
- *      Author: Home
+ *      Author: iliyaaizin 323500942 & yaronlibman 302730072
  */
 
 #ifndef SENSOR_H_

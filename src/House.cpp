@@ -1,3 +1,10 @@
+/*
+* Simulator.cpp
+*
+*  Created on: Mar 15, 2016
+*      Author: iliyaaizin 323500942 & yaronlibman 302730072
+*/
+
 #include "House.h"
 #include <stdexcept>
 #include <algorithm>

@@ -2,7 +2,7 @@
  * NaiveAlgo.h
  *
  *  Created on: 19 Mar 2016
- *      Author: Ilya Aizin & Yaron Libman
+ *      Author: iliyaaizin 323500942 & yaronlibman 302730072
  */
 
 #ifndef NAIVEALGO_H_
