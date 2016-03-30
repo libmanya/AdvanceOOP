@@ -37,7 +37,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 		if (!fin)
 		{
-			throw "error couldn't find or open config file";
+			throw "Error: couldn't find or open configuration file 'Config.ini'";
 		}
 	}
 
@@ -251,8 +251,8 @@ static std::string trim(std::string& str)
 int main(int argsc, char **argv)
 {
 	int i;
-	string strConfigPath = "";
-	string strHousesPath = "";
+	string sConfigPath = "";
+	string sHousesPath = "";
 
 	// Gets Command line parameters
 	for (i = 1; i < argsc; i++)
@@ -260,12 +260,12 @@ int main(int argsc, char **argv)
 		if (CONFIG_PATH_FLAG.compare(argv[i]) == 0)
 		{
 			if (i < (argsc - 1))
-				strConfigPath = argv[++i];
+				sConfigPath = argv[++i];
 		}
 		else if (HOUSE_PATH_FLAG.compare(argv[i]) == 0)
 		{
 			if (i < (argsc - 1))
-				strHousesPath = argv[++i];
+				sHousesPath = argv[++i];
 		}
 		else
 		{
@@ -274,18 +274,18 @@ int main(int argsc, char **argv)
 		}
 	}
 
-	//Add config Path dir sign id needed
-	if ((strConfigPath.length() > 0) && strConfigPath[strConfigPath.length() - 1] != PATH_SEPARATOR)
+	// Add config Path dir sign id needed
+	if ((sConfigPath.length() > 0) && sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
 	{
-		strConfigPath += PATH_SEPARATOR;
+		sConfigPath += PATH_SEPARATOR;
 	}
 
-	//Concat file name
-	strConfigPath += CONFIG_FILE_NAME;
+	// Concat file name
+	sConfigPath += CONFIG_FILE_NAME;
 	
 	try
 	{
-		Simulator sim(strConfigPath, "");
+		Simulator sim(sConfigPath, "");
 		sim.Run();
 	}
 	catch (const char* msg)
