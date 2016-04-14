@@ -13,5 +13,3 @@ Check issue with make steps - not stoping in the right time
 
 OTHER:
 create sequence diagram
-create class diagram
-
