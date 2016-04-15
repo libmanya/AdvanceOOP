@@ -8,6 +8,8 @@
 #include "House.h"
 #include <stdexcept>
 #include <algorithm>
+#include <cstring>
+#include <fstream>
 
 using namespace std;
 
@@ -19,83 +21,77 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 	m_BatteryConsumptionRate = nBatteryConsumptionRate;
 	m_BatteryRechargeRate = nBatteryRechargeRate;
 
-	if(sPath.length() == 0)  // Hard coded default house
+	ifstream fin(sPath);
+
+	std::getline(fin, m_sHouseName);
+	std::getline(fin, m_sHouseDesc);
+
+	string sTemp;
+	std::getline(fin, sTemp);
+	m_nRowNumber = atoi(sTemp.c_str());
+	std::getline(fin, sTemp);
+	m_nColNumber = atoi(sTemp.c_str());
+
+	// allocate map
+	m_pMap = new char*[m_nRowNumber];
+	for(int i = 0; i < m_nRowNumber; i++)
+		m_pMap[i] = new char[m_nColNumber];
+
+	for(int i = 0; i < m_nRowNumber; i++)
 	{
-		m_sHouseName = "Default house";
-		m_sHouseDesc = "Default house for exercise 1";
-		m_nRowNumber = 8;
-		m_nColNumber = 10;
+		std::getline(fin, sTemp);
+		memcpy(m_pMap[i], sTemp.c_str(), std::min((int)sTemp.length(), m_nColNumber));
+	}
 
-		// hard-codded house	
-		char house1[8][10 + 1] = {
-		"WWWWWWWWWW",
-		"W22   D59W",
-		"W W",
-		"W WWW3WW W",
-		"W6   3W  W",
-		"W78W  W  W",
-		"W99W  W  W",
-		"WWWWWWWWWW"};
+	int nDockingCount = 0;
+	int nDockingOnPerimeter = 0;
 
-		// allocate map
-		m_pMap = new char*[m_nRowNumber];
-		for(int i = 0; i < m_nRowNumber; i++)
-			m_pMap[i] = new char[m_nColNumber];
-
-		int nDockingCount = 0;
-		int nDockingOnPerimeter = 0;
-
-		// process cells
-		for(int i = 0; i < m_nRowNumber; i++)
-			for(int j = 0; j < m_nColNumber; j++)
+	// process cells
+	for(int i = 0; i < m_nRowNumber; i++)
+		for(int j = 0; j < m_nColNumber; j++)
+		{
+			//any case this is an outer wall of the house we set Wall regardless the char from file
+			if((i == 0) || (j == 0) || i == (m_nRowNumber - 1) || j == (m_nColNumber - 1))
 			{
-				//any case this is an outer wall of the house we set Wall regardless the char from file
-				if((i == 0) || (j == 0) || i == (m_nRowNumber - 1) || j == (m_nColNumber - 1))
+				if(m_pMap[i][j] == DOCKING_STATION_CELL)
 				{
-					if(house1[i][j] == DOCKING_STATION_CELL)
-					{
-						nDockingOnPerimeter++;
-					}
-					
-					m_pMap[i][j] = WALL_CELL;
+					nDockingOnPerimeter++;
 				}
-				else 
-				{
-					m_pMap[i][j] = house1[i][j];
 
-					if (house1[i][j] == DOCKING_STATION_CELL)
-					{
-						m_VacumPos.i = i;
-						m_VacumPos.j = j;
-						nDockingCount++;
-					}
-					else if (house1[i][j] >= '0' && house1[i][j] <= '9')
-					{
-						m_nInitialAmounthOfDirt += house1[i][j] - '0';
-					}
-					// if the char is not D,W or Number we set Space char (handle worng chars in input)
-					else if (m_pMap[i][j] != WALL_CELL)
-					{
-						m_pMap[i][j] = EMPTY_CELL;
-					}
+				m_pMap[i][j] = WALL_CELL;
+			}
+			else
+			{
+				if (m_pMap[i][j] == DOCKING_STATION_CELL)
+				{
+					m_VacumPos.i = i;
+					m_VacumPos.j = j;
+					nDockingCount++;
+				}
+				else if (m_pMap[i][j] >= '0' && m_pMap[i][j] <= '9')
+				{
+					m_nInitialAmounthOfDirt += m_pMap[i][j] - '0';
+				}
+				// if the char is not D,W or Number we set Space char (handle worng chars in input)
+				else if (m_pMap[i][j] != WALL_CELL)
+				{
+					m_pMap[i][j] = EMPTY_CELL;
 				}
 			}
-	
-		if (nDockingCount == 0) {
-			if (nDockingOnPerimeter > 0) {
-				throw "House Error: house should conatin a docking station not on perimeter";
-			}
+		}
 
-			throw "House Error: house should conatin a docking station";
+	if (nDockingCount == 0) {
+		if (nDockingOnPerimeter > 0) {
+			throw "House Error: house should conatin a docking station not on perimeter";
 		}
-		else if (nDockingCount > 1) {
-			throw "House Error: house can contain only one docking station";
-		}
+
+		throw "House Error: house should conatin a docking station";
 	}
-	else
-	{
-		throw new invalid_argument("Loading house from actual file is not supported in exercise 1");
+	else if (nDockingCount > 1) {
+		throw "House Error: house can contain only one docking station";
 	}
+
+	cout << *this << endl;
 }
 
 House::House(const House &oFrom)

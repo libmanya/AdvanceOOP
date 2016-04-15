@@ -9,8 +9,43 @@
 #include "NaiveAlgo.h"
 #include <algorithm>
 #include <sstream>
+#include <dirent.h>
+#include <cstdio>
+#include <sys/stat.h>
 
 using namespace std;
+
+/* Returns a list of files in a directory */
+
+int GetFilesInDirectory(std::vector<string> &out, const string &directory)
+{
+    DIR *dir;
+    class dirent *ent;
+    class stat st;
+
+    dir = opendir(directory.c_str());
+    if(dir == NULL)
+    	return -1;
+
+    while ((ent = readdir(dir)) != NULL) {
+        const string file_name = ent->d_name;
+        const string full_file_name = directory + (directory[directory.length() - 1] == '/' ? "" : "/") + file_name;
+
+        if (stat(full_file_name.c_str(), &st) == -1)
+            continue;
+
+        const bool is_directory = (st.st_mode & S_IFDIR) != 0;
+
+        if (is_directory)
+            continue;
+
+        out.push_back(full_file_name);
+    }
+    if(closedir(dir) == -1)
+    	return -1;
+
+    return 0;
+}
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
 {
@@ -58,7 +93,21 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 // Initializes houses (In exercise 1 there is only 1 hard-coded house)
 void Simulator::LoadHouses(const string &sHousesPath)
 {
-	m_vOriginalHouses.push_back(new House("", m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
+	// find house files
+	vector<string> vDirFiles;
+	vector<string> vDirHouseFiles;
+	GetFilesInDirectory(vDirFiles, sHousesPath);
+
+	for(auto oFileIter = vDirFiles.begin(); oFileIter != vDirFiles.end(); oFileIter++)
+	{
+		size_t nPos = oFileIter->find_last_of(".");
+		if(nPos != string::npos && oFileIter->substr(nPos + 1) == "house")
+			vDirHouseFiles.push_back(*oFileIter);
+	}
+
+	// load houses
+	for(string &sHouse : vDirHouseFiles)
+		m_vOriginalHouses.push_back(new House(sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
 }
 
 // Reloads simulations
@@ -254,7 +303,7 @@ int Simulator::OneSimulation::CalculateScore(int nWinnerSteps, bool bIsWinner, i
 	return nScore;
 }
 
-static std::string trim(std::string& str)
+static string trim(string& str)
 {
 	str.erase(0, str.find_first_not_of(' '));     
 	str.erase(str.find_last_not_of(' ') + 1);         
@@ -288,18 +337,22 @@ int main(int argsc, char **argv)
 		}
 	}
 
+	sConfigPath = sConfigPath.length() == 0 ? "." : sConfigPath;
 	// Add config Path dir sign id needed
-	if ((sConfigPath.length() > 0) && sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
-	{
+	if (sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
 		sConfigPath += PATH_SEPARATOR;
-	}
 
 	// Concat file name
 	sConfigPath += CONFIG_FILE_NAME;
 	
+	sHousesPath = sHousesPath.length() == 0 ? "." : sHousesPath;
+	// Add config Path dir sign id needed
+	if (sHousesPath[sHousesPath.length() - 1] != PATH_SEPARATOR)
+		sHousesPath += PATH_SEPARATOR;
+
 	try
 	{
-		Simulator sim(sConfigPath, "");
+		Simulator sim(sConfigPath, sHousesPath);
 		sim.Run();
 	}
 	catch (const char* msg)
