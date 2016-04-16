@@ -11,12 +11,18 @@
 #include <sstream>
 #include <dirent.h>
 #include <cstdio>
+#include <dlfcn.h>
+#include <list>
+#include <map>
 #include <sys/stat.h>
+#include "Algorithms\ExternalAlgo.h"
 
 using namespace std;
 
-/* Returns a list of files in a directory */
+// our global factory for making Algo 
+map<string, maker_t *> factory;
 
+/* Returns a list of files in a directory */
 int GetFilesInDirectory(std::vector<string> &out, const string &directory)
 {
     DIR *dir;
@@ -45,6 +51,32 @@ int GetFilesInDirectory(std::vector<string> &out, const string &directory)
     	return -1;
 
     return 0;
+}
+
+int LoadAlgoFiles(std::vector<string> &algos) {
+	void *dlib;
+	list<void *> dl_list;
+	map<string, maker_t *>::iterator itr;
+	list<AbstractAlgorithm *> algo_list;
+	
+	for (size_t i = 0; i < algos.size; i++)
+	{
+		dlib = dlopen(algos[i], RTLD_NOW);
+		if (dlib == NULL) {
+			cerr << dlerror() << endl;
+			exit(-1);
+		}
+
+		// add the handle to our list
+		dl_list.insert(dl_list.end(), dlib);
+	}
+
+	// create an array of the algo
+	for (itr = factory.begin(); itr != factory.end();
+	itr++) {
+		algo_list.insert(algo_list.end(), itr->second());
+	}
+
 }
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
