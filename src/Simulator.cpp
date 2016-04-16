@@ -16,6 +16,7 @@
 #include <map>
 #include <sys/stat.h>
 #include "ExternalAlgo.h"
+#include "HashMapTwoDDynamicArray.h"
 
 using namespace std;
 
@@ -62,7 +63,7 @@ int LoadAlgoFiles(vector<string> &algos) {
 	for (size_t i = 0; i < algos.size(); i++)
 	{
         const char * current = algos.at(i).c_str();
-		dlib = dlopen(current, RTLD_NOW);
+		//dlib = dlopen(current, RTLD_NOW);
 		if (dlib == NULL) {
 			cerr << "error" << endl;
 			exit(-1);
@@ -347,6 +348,31 @@ static string trim(string& str)
 // MAIN
 int main(int argsc, char **argv)
 {
+	// 2d Array test
+	HMTDDA temp;
+
+	cout << temp.exists(-1, -1) <<  temp.exists(-1, 0) << temp.exists(-1, 1) << endl;
+	cout << temp.exists( 0, -1) <<  temp.exists( 0, 0) << temp.exists( 0, 1) << endl;
+	cout << temp.exists( 1, -1) <<  temp.exists( 1, 0) << temp.exists( 1, 1) << endl;
+
+	temp[0][0] = 'A';
+
+	temp[0][1] = 'T';
+
+	temp[0][-1] = 'C';
+
+	temp[-1][0] = 'C';
+
+	temp[1][0] = 'T';
+
+	cout << temp.exists(-1, -1) <<  temp.exists(-1, 0) << temp.exists(-1, 1) << endl;
+	cout << temp.exists( 0, -1) <<  temp.exists( 0, 0) << temp.exists( 0, 1) << endl;
+	cout << temp.exists( 1, -1) <<  temp.exists( 1, 0) << temp.exists( 1, 1) << endl;
+
+	cout << " " 		 <<  temp[-1][0] << " " 		<< endl;
+	cout << temp[ 0][-1] <<  temp[ 0][0] << temp[ 0][1] << endl;
+	cout << " " 		 <<  temp[ 1][0] << " " 		<< endl;
+
 	int i;
 	string sConfigPath = "";
 	string sHousesPath = "";
