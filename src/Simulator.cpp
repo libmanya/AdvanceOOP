@@ -15,11 +15,11 @@
 #include <list>
 #include <map>
 #include <sys/stat.h>
-#include "Algorithms\ExternalAlgo.h"
+#include "ExternalAlgo.h"
 
 using namespace std;
 
-// our global factory for making Algo 
+// our global factory for making Algo
 map<string, maker_t *> factory;
 
 /* Returns a list of files in a directory */
@@ -53,17 +53,18 @@ int GetFilesInDirectory(std::vector<string> &out, const string &directory)
     return 0;
 }
 
-int LoadAlgoFiles(std::vector<string> &algos) {
+int LoadAlgoFiles(vector<string> &algos) {
 	void *dlib;
 	list<void *> dl_list;
 	map<string, maker_t *>::iterator itr;
 	list<AbstractAlgorithm *> algo_list;
-	
-	for (size_t i = 0; i < algos.size; i++)
+
+	for (size_t i = 0; i < algos.size(); i++)
 	{
-		dlib = dlopen((char*)algos[i], RTLD_NOW);
+        const char * current = algos.at(i).c_str();
+		dlib = dlopen(current, RTLD_NOW);
 		if (dlib == NULL) {
-			cerr << dlerror() << endl;
+			cerr << "error" << endl;
 			exit(-1);
 		}
 
@@ -74,6 +75,7 @@ int LoadAlgoFiles(std::vector<string> &algos) {
 	// create an array of the algo
 	for (itr = factory.begin(); itr != factory.end();
 	itr++) {
+        cout << "load somthinf iter" <<endl;
 		algo_list.insert(algo_list.end(), itr->second());
 	}
 
@@ -119,7 +121,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 		m_config[trim(tokens[0])] = stoi(trim(tokens[1]));
 	}
-		
+
 }
 
 // Initializes houses (In exercise 1 there is only 1 hard-coded house)
@@ -216,7 +218,7 @@ void Simulator::Run()
 								oSim->SetActualPositionInCompetition(nFinishedCount + 1);
 						}
 						else // first to finish
-						{ 
+						{
 							oSim->SetActualPositionInCompetition(1);
 						}
 
@@ -285,7 +287,7 @@ void Simulator::OneSimulation::MakeStep()
 
 	// check battery level
 	if (m_oHouse.GetBatteryLevel() == 0 && m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] != DOCKING_STATION_CELL)
-	{ 
+	{
 		SimulationState = OutOfBattery;
 		return;
 	}
@@ -337,8 +339,8 @@ int Simulator::OneSimulation::CalculateScore(int nWinnerSteps, bool bIsWinner, i
 
 static string trim(string& str)
 {
-	str.erase(0, str.find_first_not_of(' '));     
-	str.erase(str.find_last_not_of(' ') + 1);         
+	str.erase(0, str.find_first_not_of(' '));
+	str.erase(str.find_last_not_of(' ') + 1);
 	return str;
 }
 
@@ -349,6 +351,9 @@ int main(int argsc, char **argv)
 	string sConfigPath = "";
 	string sHousesPath = "";
 	string sAlgosPath = "";
+	vector<string> yaron;
+	yaron.insert(yaron.end(), "/home/yaron/Documents/yaron/bin/Debug/Algo_A_.so");
+	LoadAlgoFiles(yaron);
 
 	// Gets Command line parameters
 	for (i = 1; i < argsc; i++)
@@ -382,7 +387,7 @@ int main(int argsc, char **argv)
 
 	// Concat file name
 	sConfigPath += CONFIG_FILE_NAME;
-	
+
 	sHousesPath = sHousesPath.length() == 0 ? "." : sHousesPath;
 	// Add Houses Path dir sign id needed
 	if (sHousesPath[sHousesPath.length() - 1] != PATH_SEPARATOR)
