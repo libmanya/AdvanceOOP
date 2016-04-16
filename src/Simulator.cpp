@@ -351,6 +351,8 @@ int main(int argsc, char **argv)
 	string sConfigPath = "";
 	string sHousesPath = "";
 	string sAlgosPath = "";
+
+	//TODO: Remove , FOR TEST
 	vector<string> yaron;
 	yaron.insert(yaron.end(), "/home/yaron/Documents/yaron/bin/Debug/Algo_A_.so");
 	LoadAlgoFiles(yaron);
