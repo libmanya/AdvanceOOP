@@ -61,7 +61,7 @@ int LoadAlgoFiles(std::vector<string> &algos) {
 	
 	for (size_t i = 0; i < algos.size; i++)
 	{
-		dlib = dlopen(algos[i], RTLD_NOW);
+		dlib = dlopen((char*)algos[i], RTLD_NOW);
 		if (dlib == NULL) {
 			cerr << dlerror() << endl;
 			exit(-1);
@@ -370,7 +370,7 @@ int main(int argsc, char **argv)
 		}
 		else
 		{
-			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [­algorithm_path <algorithm path>]" << endl;
+			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [ï¿½algorithm_path <algorithm path>]" << endl;
 			return 1;
 		}
 	}
