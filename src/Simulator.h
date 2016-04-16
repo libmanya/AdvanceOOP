@@ -23,9 +23,11 @@
 static std::string trim(std::string& str);
 
 const string CONFIG_PATH_FLAG = "-config";
-const string HOUSE_PATH_FLAG = "-house";
+const string HOUSE_PATH_FLAG = "-house_path";
+const string ALGO_PATH_FLAG = "-algorithm_path";
 const string CONFIG_FILE_NAME = "config.ini";
 const string HOUSES_FILE_SUFFIX = ".house";
+const string ALGO_FILE_SUFFIX = ".so";
 
 const string BATTERY_CAPACITY_KEY = "BatteryCapacity";
 const string BATTERY_CONSUMPTION_KEY = "BatteryConsumptionRate";

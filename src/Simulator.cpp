@@ -316,6 +316,7 @@ int main(int argsc, char **argv)
 	int i;
 	string sConfigPath = "";
 	string sHousesPath = "";
+	string sAlgosPath = "";
 
 	// Gets Command line parameters
 	for (i = 1; i < argsc; i++)
@@ -330,9 +331,14 @@ int main(int argsc, char **argv)
 			if (i < (argsc - 1))
 				sHousesPath = argv[++i];
 		}
+		else if (ALGO_PATH_FLAG.compare(argv[i]) == 0)
+		{
+			if (i < (argsc - 1))
+				sAlgosPath = argv[++i];
+		}
 		else
 		{
-			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>]" << endl;
+			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [­algorithm_path <algorithm path>]" << endl;
 			return 1;
 		}
 	}
@@ -346,9 +352,14 @@ int main(int argsc, char **argv)
 	sConfigPath += CONFIG_FILE_NAME;
 	
 	sHousesPath = sHousesPath.length() == 0 ? "." : sHousesPath;
-	// Add config Path dir sign id needed
+	// Add Houses Path dir sign id needed
 	if (sHousesPath[sHousesPath.length() - 1] != PATH_SEPARATOR)
 		sHousesPath += PATH_SEPARATOR;
+
+	sAlgosPath = sAlgosPath.length() == 0 ? "." : sAlgosPath;
+	// Add Algos Path dir sign id needed
+	if (sAlgosPath[sAlgosPath.length() - 1] != PATH_SEPARATOR)
+		sAlgosPath += PATH_SEPARATOR;
 
 	try
 	{
