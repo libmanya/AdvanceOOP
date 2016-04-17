@@ -85,9 +85,6 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 
 		dl_list.insert(dl_list.end(), dlib);
 	}
-
-    cout << factory.size() << " Algo Was Loaded" << endl;
-
 }
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath)
@@ -96,7 +93,7 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
     vector<string> vDirAlgosFiles;
 
 	//Read Configuration File to members
-	//ReadConfig(sConfigFilePath);
+	ReadConfig(sConfigFilePath);
 
 	// Load houses
 	LoadHouses(sHousesPath);
@@ -176,7 +173,14 @@ void Simulator::ReloadAlgorithms()
 
 	m_vAlgos.clear();
 
-	m_vAlgos.push_back(new NaiveAlgo());
+
+   map<string, maker_t *>::iterator itr;
+   // create an array of the shape names
+   for(itr=factory.begin(); itr!=factory.end();itr++)
+   {
+        m_vAlgos.push_back(factory[itr->first]());
+        cout << "Hey" <<endl;
+   }
 }
 
 // Runs the simulation
