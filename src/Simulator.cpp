@@ -54,6 +54,21 @@ int GetFilesInDirectory(std::vector<string> &out, const string &directory)
     return 0;
 }
 
+
+void GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<string> &vDirTypeFiles)
+{
+	// find house files
+	vector<string> vDirFiles;
+	GetFilesInDirectory(vDirFiles, sPath);
+
+	for(auto oFileIter = vDirFiles.begin(); oFileIter != vDirFiles.end(); oFileIter++)
+	{
+		size_t nPos = oFileIter->find_last_of(".");
+		if(nPos != string::npos && oFileIter->substr(nPos + 1) == sSuffix)
+			vDirTypeFiles.push_back(*oFileIter);
+	}
+}
+
 int LoadAlgoFilesToFactory(vector<string> &algos) {
 	void *dlib;
 	list<void *> dl_list;
@@ -127,38 +142,18 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 // Initializes houses (In exercise 1 there is only 1 hard-coded house)
 void Simulator::LoadHouses(const string &sHousesPath)
 {
-	// find house files
-	vector<string> vDirFiles;
-	vector<string> vDirHouseFiles;
-	GetFilesInDirectory(vDirFiles, sHousesPath);
-
-	for(auto oFileIter = vDirFiles.begin(); oFileIter != vDirFiles.end(); oFileIter++)
-	{
-		size_t nPos = oFileIter->find_last_of(".");
-		if(nPos != string::npos && oFileIter->substr(nPos + 1) == "house")
-			vDirHouseFiles.push_back(*oFileIter);
-	}
+    vector<string> vDirHousesFiles;
+    GetFilesListWithSuffix(sHousesPath, "house", vDirHousesFiles);
 
 	// load houses
-	for(string &sHouse : vDirHouseFiles)
+	for(string &sHouse : vDirHousesFiles)
 		m_vOriginalHouses.push_back(new House(sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
 }
 
 void Simulator::LoadAlgos(std::vector<string> &vDirAlgosFilesOut, const string &sAlgosPath)
 {
 	// find house files
-	vector<string> vDirFiles;
-	vector<string> vDirAlgosFiles;
-	GetFilesInDirectory(vDirFiles, sAlgosPath);
-
-	for(auto oFileIter = vDirFiles.begin(); oFileIter != vDirFiles.end(); oFileIter++)
-	{
-		size_t nPos = oFileIter->find_last_of(".");
-		if(nPos != string::npos && oFileIter->substr(nPos + 1) == "so")
-			vDirAlgosFiles.push_back(*oFileIter);
-	}
-
-	 vDirAlgosFilesOut = vDirAlgosFiles;
+    GetFilesListWithSuffix(sAlgosPath, "so", vDirAlgosFilesOut);
 }
 
 // Reloads simulations
