@@ -15,7 +15,7 @@
 #include <list>
 #include <map>
 #include <sys/stat.h>
-#include "ExternalAlgo.h"
+#include "Algorithms/ExternalAlgo.h"
 #include "HashMapTwoDDynamicArray.h"
 
 using namespace std;
@@ -62,7 +62,7 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 	for (size_t i = 0; i < algos.size(); i++)
 	{
         const char * current = algos.at(i).c_str();
-		//dlib = dlopen(current, RTLD_NOW);
+		dlib = dlopen(current, RTLD_NOW);
 		if (dlib == NULL) {
 			cerr << "error" << endl;
 			exit(-1);
@@ -75,13 +75,19 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 
 }
 
-Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath)
+Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath)
 {
+
+    vector<string> vDirAlgosFiles;
+
 	//Read Configuration File to members
-	ReadConfig(sConfigFilePath);
+	//ReadConfig(sConfigFilePath);
 
 	// Load houses
 	LoadHouses(sHousesPath);
+
+	LoadAlgos(vDirAlgosFiles, sAlgosPath);
+	LoadAlgoFilesToFactory(vDirAlgosFiles);
 }
 
 // Reads configuration file and sets m_config keys
@@ -136,6 +142,23 @@ void Simulator::LoadHouses(const string &sHousesPath)
 	// load houses
 	for(string &sHouse : vDirHouseFiles)
 		m_vOriginalHouses.push_back(new House(sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
+}
+
+void Simulator::LoadAlgos(std::vector<string> &vDirAlgosFilesOut, const string &sAlgosPath)
+{
+	// find house files
+	vector<string> vDirFiles;
+	vector<string> vDirAlgosFiles;
+	GetFilesInDirectory(vDirFiles, sAlgosPath);
+
+	for(auto oFileIter = vDirFiles.begin(); oFileIter != vDirFiles.end(); oFileIter++)
+	{
+		size_t nPos = oFileIter->find_last_of(".");
+		if(nPos != string::npos && oFileIter->substr(nPos + 1) == "so")
+			vDirAlgosFiles.push_back(*oFileIter);
+	}
+
+	 vDirAlgosFilesOut = vDirAlgosFiles;
 }
 
 // Reloads simulations
@@ -416,7 +439,7 @@ int main(int argsc, char **argv)
 
 	try
 	{
-		Simulator sim(sConfigPath, sHousesPath);
+		Simulator sim(sConfigPath, sHousesPath, sAlgosPath);
 		sim.Run();
 	}
 	catch (const char* msg)

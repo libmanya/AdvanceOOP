@@ -14,11 +14,11 @@
 #include "Sensor.h"
 #include <map>
 
-#if defined(WIN32) || defined(_WIN32) 
+#if defined(WIN32) || defined(_WIN32)
 #define PATH_SEPARATOR '\\'
-#else 
+#else
 #define PATH_SEPARATOR '/'
-#endif 
+#endif
 
 static std::string trim(std::string& str);
 
@@ -42,7 +42,7 @@ class Simulator
 
 public:
 	//Simulator Ctor with (config file Path)
-	Simulator(const string &sConfigFilePath, const string &HousesPath);
+	Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath);
 	~Simulator();
 	void Run();
 
@@ -65,7 +65,7 @@ public:
 		void AnnounceAboutToFinish()					{ m_pAlgo->aboutToFinish(m_config["MaxStepsAfterWinner"]); };
 		int GetActualPositionInCompetition()	const	{ return m_nActualPositionInCompetition; }
 		SimulationStateType GetSimulationState()const	{ return SimulationState; }
-		int CalculateScore(int nWinnerSteps,	bool bIsWinner, int nSimulationSteps) 
+		int CalculateScore(int nWinnerSteps,	bool bIsWinner, int nSimulationSteps)
 												const;
 		void SetActualPositionInCompetition(int nPos)	{ m_nActualPositionInCompetition = nPos;  }
 
@@ -84,6 +84,7 @@ private:
 
 	void ReadConfig(const string &sConfigFilePath);
 	void LoadHouses(const string &sHousesPath);
+	void LoadAlgos(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
 	void ReloadAlgorithms();
 	void ReloadSimulations(House *oHouse);
 
