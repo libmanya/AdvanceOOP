@@ -20,8 +20,8 @@
 
 using namespace std;
 
-// our global factory for making Algo
-map<string, maker_t *> factory;
+// our global factory for making shapes
+map<string, maker_t*> factory;
 
 /* Returns a list of files in a directory */
 int GetFilesInDirectory(std::vector<string> &out, const string &directory)
@@ -54,11 +54,10 @@ int GetFilesInDirectory(std::vector<string> &out, const string &directory)
     return 0;
 }
 
-int LoadAlgoFiles(vector<string> &algos) {
+int LoadAlgoFilesToFactory(vector<string> &algos) {
 	void *dlib;
 	list<void *> dl_list;
-	map<string, maker_t *>::iterator itr;
-	list<AbstractAlgorithm *> algo_list;
+    map<string, maker_t *>::iterator itr;
 
 	for (size_t i = 0; i < algos.size(); i++)
 	{
@@ -69,16 +68,10 @@ int LoadAlgoFiles(vector<string> &algos) {
 			exit(-1);
 		}
 
-		// add the handle to our list
 		dl_list.insert(dl_list.end(), dlib);
 	}
 
-	// create an array of the algo
-	for (itr = factory.begin(); itr != factory.end();
-	itr++) {
-        cout << "load somthinf iter" <<endl;
-		algo_list.insert(algo_list.end(), itr->second());
-	}
+    cout << factory.size() << " Algo Was Loaded" << endl;
 
 }
 
@@ -377,11 +370,6 @@ int main(int argsc, char **argv)
 	string sConfigPath = "";
 	string sHousesPath = "";
 	string sAlgosPath = "";
-
-	//TODO: Remove , FOR TEST
-	vector<string> yaron;
-	yaron.insert(yaron.end(), "/home/yaron/Documents/yaron/bin/Debug/Algo_A_.so");
-	LoadAlgoFiles(yaron);
 
 	// Gets Command line parameters
 	for (i = 1; i < argsc; i++)
