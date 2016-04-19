@@ -87,10 +87,15 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 
 		dl_list.insert(dl_list.end(), dlib);
 	}
+    if(algos.size() == 0){
+      string strError = "no algo file in path";
+		throw  strError.c_str();
+    }
 
 	if(nErrorCount == algos.size()){
-        string path = "get path from one file ";
-        string strError = "All Algorithms files in target '" + algos.at(0) + "' cannot be open or invalid";
+        string path = algos.at(0);
+        path = path.substr(0, path.find_last_of(PATH_SEPARATOR));
+        string strError = "All Algorithms files in target '" + path + "' cannot be open or invalid";
 		throw  strError.c_str();
 	}
 }
@@ -323,7 +328,6 @@ void Simulator::Run()
 		for(itr = log.begin(); itr != log.end(); itr++)
 		{
             cout << *itr << endl;
-            cout << "hello" << endl;
 		}
 
 	}
