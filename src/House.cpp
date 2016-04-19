@@ -107,7 +107,7 @@ House::House(const House &oFrom)
 {
 	m_nRowNumber = 0;
 	m_nColNumber = 0;
-
+    m_nMaxSteps = oFrom.GetMaxSteps();
 	m_pMap = nullptr;
 
 	// constract using operator =
@@ -128,6 +128,7 @@ House &House::operator=(const House &oFrom)
 	m_BatteryCapacity = oFrom.m_BatteryCapacity;
 	m_BatteryConsumptionRate = oFrom.m_BatteryConsumptionRate;
 	m_BatteryRechargeRate = oFrom.m_BatteryRechargeRate;
+    m_nMaxSteps = oFrom.GetMaxSteps();
 
 	// if dimentions don't agree free current map allocation and reallocate
 	if(m_nRowNumber != oFrom.m_nRowNumber || m_nColNumber != oFrom.m_nColNumber)

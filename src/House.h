@@ -71,6 +71,8 @@ private:
 	int m_nRowNumber;
 	int m_nColNumber;
 	char **m_pMap;
+
+	//House max Steps
 	int m_nMaxSteps;
 
 	// Dirt
