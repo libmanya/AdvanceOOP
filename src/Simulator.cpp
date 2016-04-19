@@ -517,6 +517,13 @@ int main(int argsc, char **argv)
 	catch (const char* msg)
 	{
 		cout << msg << endl;
+				vector<string> log = Logger::getLog();
+		vector<string>::const_iterator itr;
+
+		for(itr = log.begin(); itr != log.end(); itr++)
+		{
+            cout << *itr << endl;
+		}
 	}
 
 	return 0;
