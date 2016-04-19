@@ -13,6 +13,7 @@
 #include "AbstractAlgorithm.h"
 #include "Sensor.h"
 #include <map>
+#include "Logger.h"
 
 #if defined(WIN32) || defined(_WIN32)
 #define PATH_SEPARATOR '\\'

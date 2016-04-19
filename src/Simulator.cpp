@@ -81,7 +81,7 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 		dlib = dlopen(current, RTLD_NOW);
 		if (dlib == NULL) {
             string strError = std::string(current) + "file cannot be loaded ot is not a valid so";
-			cout <<  strError << endl;
+			Logger::addLogMSG(strError);
 			nErrorCount++;
 		}
 
@@ -89,7 +89,8 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 	}
 
 	if(nErrorCount == algos.size()){
-        string strError = "All Algos Error";
+        string path = "get path from one file ";
+        string strError = "All Algorithms files in target '" + algos.at(0) + "' cannot be open or invalid";
 		throw  strError.c_str();
 	}
 }
@@ -315,6 +316,16 @@ void Simulator::Run()
 			int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
 			cout << nScore << endl;
 		}
+
+		vector<string> log = Logger::getLog();
+		vector<string>::const_iterator itr;
+
+		for(itr = log.begin(); itr != log.end(); itr++)
+		{
+            cout << *itr << endl;
+            cout << "hello" << endl;
+		}
+
 	}
 }
 

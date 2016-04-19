@@ -26,7 +26,8 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 	if(!fin)
 	{
         string strError = sPath + "File cannot open";
-        throw strError.c_str();
+        Logger::addLogMSG(strError);
+        return;
 	}
 
 	string sTemp;
@@ -90,15 +91,16 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 		}
 
 	if (nDockingCount == 0) {
-		string strError = sPath + "Missing Docking Station";
-        throw strError.c_str();
+		string strError = sPath + " Missing Docking Station";
+        Logger::addLogMSG(strError);
 	}
 	else if (nDockingCount > 1) {
-		string strError = sPath + "too many Docking Stations";
-        throw strError.c_str();
+		string strError = sPath + " too many Docking Stations";
+        Logger::addLogMSG(strError);
 	}
-
-	cout << *this << endl;
+    else{
+        cout << *this << endl;
+	}
 }
 
 House::House(const House &oFrom)

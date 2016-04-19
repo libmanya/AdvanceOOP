@@ -8,7 +8,9 @@
 #define HOUSE_H_
 #include <iostream>
 #include <string>
-#include "Direction.h"
+#include "Direction.h""
+#include "Logger.h"
+
 using namespace std;
 
 #define WALL_CELL 'W'
