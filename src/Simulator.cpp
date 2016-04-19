@@ -15,6 +15,7 @@
 #include <list>
 #include <map>
 #include <sys/stat.h>
+#include <sys/stat.h>
 #include "Algorithms/ExternalAlgo.h"
 #include "HashMapTwoDDynamicArray.h"
 
@@ -118,12 +119,10 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
 // Reads configuration file and sets m_config keys
 void Simulator::ReadConfig(const string &sConfigFilePath)
 {
-
 	string line;
+    struct stat buf;
 
-
-    //TODO : Check if file exits
-    if (false){
+    if (stat(sConfigFilePath.c_str(), &buf) == 0){
         string strError = "config.ini doesn't exists in ' " + sConfigFilePath;
         throw  strError.c_str();
     }
