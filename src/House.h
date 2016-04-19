@@ -58,7 +58,7 @@ public:
 	int GetBatteryLevel() 				const { return m_BatteryLevel; };
 	const string& GetHouseName()		const { return m_sHouseName; };
 	const string& GetHouseDesc()		const { return m_sHouseDesc; };
-
+    int GetMaxSteps() 				const { return m_nMaxSteps; };
 	~House();
 
 private:
@@ -69,6 +69,7 @@ private:
 	int m_nRowNumber;
 	int m_nColNumber;
 	char **m_pMap;
+	int m_nMaxSteps;
 
 	// Dirt
 	int m_nInitialAmounthOfDirt;

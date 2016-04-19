@@ -23,10 +23,19 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 
 	ifstream fin(sPath);
 
-	std::getline(fin, m_sHouseName);
-	std::getline(fin, m_sHouseDesc);
+	if(!fin)
+	{
+        string strError = sPath + "File cannot open";
+        throw strError.c_str();
+	}
 
 	string sTemp;
+
+	std::getline(fin, m_sHouseName);
+
+	std::getline(fin, sTemp);
+	m_nMaxSteps = atoi(sTemp.c_str());
+
 	std::getline(fin, sTemp);
 	m_nRowNumber = atoi(sTemp.c_str());
 	std::getline(fin, sTemp);
@@ -81,14 +90,12 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 		}
 
 	if (nDockingCount == 0) {
-		if (nDockingOnPerimeter > 0) {
-			throw "House Error: house should conatin a docking station not on perimeter";
-		}
-
-		throw "House Error: house should conatin a docking station";
+		string strError = sPath + "Missing Docking Station";
+        throw strError.c_str();
 	}
 	else if (nDockingCount > 1) {
-		throw "House Error: house can contain only one docking station";
+		string strError = sPath + "too many Docking Stations";
+        throw strError.c_str();
 	}
 
 	cout << *this << endl;
@@ -198,7 +205,7 @@ void House::TryMoveVacuum(Direction oDir)
 	int j = m_VacumPos.j;
 
 	if(m_BatteryLevel > 0 || m_pMap[i][j] == DOCKING_STATION_CELL)
-	{ 	
+	{
 		// clean if there is dust at current position
 		this->TryCollectDirt();
 

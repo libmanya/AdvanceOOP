@@ -1,5 +1,5 @@
 /*
- * Simulator.cpp
+ * Simulator`.cpp
  *
  *  Created on: Mar 15, 2016
  *      Author: iliyaaizin 323500942 & yaronlibman 302730072
@@ -73,17 +73,24 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 	void *dlib;
 	list<void *> dl_list;
     map<string, maker_t *>::iterator itr;
+    int nErrorCount = 0;
 
 	for (size_t i = 0; i < algos.size(); i++)
 	{
         const char * current = algos.at(i).c_str();
 		dlib = dlopen(current, RTLD_NOW);
 		if (dlib == NULL) {
-			cerr << "error" << endl;
-			exit(-1);
+            string strError = std::string(current) + "file cannot be loaded ot is not a valid so";
+			cout <<  strError << endl;
+			nErrorCount++;
 		}
 
 		dl_list.insert(dl_list.end(), dlib);
+	}
+
+	if(nErrorCount == algos.size()){
+        string strError = "All Algos Error";
+		throw  strError.c_str();
 	}
 }
 
@@ -105,21 +112,22 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
 // Reads configuration file and sets m_config keys
 void Simulator::ReadConfig(const string &sConfigFilePath)
 {
-	ifstream fin(sConfigFilePath);
+
 	string line;
 
+
+    //TODO : Check if file exits
+    if (false){
+        string strError = "config.ini doesn't exists in ' " + sConfigFilePath;
+        throw  strError.c_str();
+    }
+
+    ifstream fin(sConfigFilePath);
 	//check if file open with path, if not try open file in current dir
 	if (!fin)
 	{
-		if (sConfigFilePath.compare(CONFIG_FILE_NAME) != 0)
-		{
-			fin.open(CONFIG_FILE_NAME);
-		}
-
-		if (!fin)
-		{
-			throw "Error: couldn't find or open configuration file 'Config.ini'";
-		}
+		string strError = "config.ini exists in ' " + sConfigFilePath + "' but cannot be opened";
+		throw  strError.c_str();
 	}
 
 	while (getline(fin, line))
@@ -134,6 +142,50 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 		m_config[trim(tokens[0])] = stoi(trim(tokens[1]));
 	}
 
+    int nMissingCount = 0;
+    string strMissingParams = "";
+
+	//Checking all config paramters
+	if (m_config.find(BATTERY_CAPACITY_KEY) == m_config.end()){
+        nMissingCount++;
+        strMissingParams += BATTERY_CAPACITY_KEY;
+	}
+
+	if (m_config.find(BATTERY_CONSUMPTION_KEY) == m_config.end()){
+        if(nMissingCount != 0)
+        {
+            strMissingParams += ", ";
+        }
+
+        nMissingCount++;
+        strMissingParams += BATTERY_CONSUMPTION_KEY;
+	}
+
+	if (m_config.find(BATTERY_RECHARGE_KEY) == m_config.end()){
+	        if(nMissingCount != 0)
+        {
+            strMissingParams += ", ";
+        }
+
+        nMissingCount++;
+        strMissingParams += BATTERY_RECHARGE_KEY;
+	}
+
+	if (m_config.find(MAX_STEPS_AFTER_KEY) == m_config.end()){
+	        if(nMissingCount != 0)
+        {
+            strMissingParams += ", ";
+        }
+
+        nMissingCount++;
+        strMissingParams += MAX_STEPS_AFTER_KEY;
+	}
+
+	if(nMissingCount != 0)
+	{
+        string strError = std::string("config.ini missing ") + std::to_string(nMissingCount) + std::string(" parameter(s) : ") + strMissingParams;
+        throw strError.c_str();
+	}
 }
 
 // Initializes houses (In exercise 1 there is only 1 hard-coded house)
@@ -179,7 +231,6 @@ void Simulator::ReloadAlgorithms()
    for(itr=factory.begin(); itr!=factory.end();itr++)
    {
         m_vAlgos.push_back(factory[itr->first]());
-        cout << "Hey" <<endl;
    }
 }
 
@@ -196,13 +247,14 @@ void Simulator::Run()
 		bool bIsWinner = false;
 		bool bAnnounceWinner = false;
 		int nSimulationSteps = 0;
+		int nMaxSimulationSteps = pHouse->GetMaxSteps(); // Get From House
 		int nWinnerSteps = 0;
 		OneSimulation* lastFinnished = nullptr;
 		int nFinishedCount = 0;
 
 		// Run until some algorithms didn't finish and simulation maximum steps count was not reached
 		while(bSomeActive
-					&& nSimulationSteps < m_config[MAX_STEPS_KEY]
+					&& nSimulationSteps < nMaxSimulationSteps
 					&& (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config[MAX_STEPS_AFTER_KEY]))
 		{
 			bSomeActive = false;
@@ -214,7 +266,7 @@ void Simulator::Run()
 					bSomeActive = true;
 
 					// When there is a winner or steps == MaxSteps - MaxStepsAfterWinner algorithm should receive AboutToFinish announcement
-					if(bAnnounceWinner || (nSimulationSteps == (m_config[MAX_STEPS_KEY] - m_config[MAX_STEPS_AFTER_KEY])))
+					if(bAnnounceWinner || (nSimulationSteps == (nMaxSimulationSteps - m_config[MAX_STEPS_AFTER_KEY])))
 					{
 						bAnnounceWinner = false;
 						oSim->AnnounceAboutToFinish();
@@ -418,10 +470,17 @@ int main(int argsc, char **argv)
 		}
 	}
 
-	sConfigPath = sConfigPath.length() == 0 ? "." : sConfigPath;
-	// Add config Path dir sign id needed
-	if (sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
-		sConfigPath += PATH_SEPARATOR;
+    if(sConfigPath.length() != 0)
+    {
+        sConfigPath = sConfigPath.length() == 0 ? "." : sConfigPath;
+        // Add config Path dir sign id needed
+        if (sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
+            sConfigPath += PATH_SEPARATOR;
+    }
+    else
+    {
+        sConfigPath = "./";
+    }
 
 	// Concat file name
 	sConfigPath += CONFIG_FILE_NAME;

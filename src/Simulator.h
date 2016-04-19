@@ -32,8 +32,9 @@ const string ALGO_FILE_SUFFIX = "_.so";
 const string BATTERY_CAPACITY_KEY = "BatteryCapacity";
 const string BATTERY_CONSUMPTION_KEY = "BatteryConsumptionRate";
 const string BATTERY_RECHARGE_KEY = "BatteryRechargeRate";
-const string MAX_STEPS_KEY = "MaxSteps";
 const string MAX_STEPS_AFTER_KEY = "MaxStepsAfterWinner";
+
+const string MAX_STEPS_KEY = "MaxSteps";
 
 using namespace std;
 
