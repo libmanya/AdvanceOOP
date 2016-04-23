@@ -17,7 +17,7 @@
 #include <sys/stat.h>
 #include <sys/stat.h>
 #include "Algorithms/ExternalAlgo.h"
-#include "HashMapTwoDDynamicArray.h"
+#include "TwoDDynamicArray.h"
 
 using namespace std;
 
@@ -93,7 +93,7 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 		throw  strError.c_str();
     }
 
-	if(nErrorCount == algos.size()){
+	if(nErrorCount == (int)algos.size()){
         string path = algos.at(0);
         path = path.substr(0, path.find_last_of(PATH_SEPARATOR));
         string strError = "All Algorithms files in target '" + path + "' cannot be open or invalid";
@@ -430,7 +430,7 @@ static string trim(string& str)
 int main(int argsc, char **argv)
 {
 	// 2d Array test
-	HMTDDA temp;
+	TDDA<char> temp;
 
 	cout << temp.exists(-1, -1) <<  temp.exists(-1, 0) << temp.exists(-1, 1) << endl;
 	cout << temp.exists( 0, -1) <<  temp.exists( 0, 0) << temp.exists( 0, 1) << endl;

@@ -8,8 +8,9 @@
 #define HOUSE_H_
 #include <iostream>
 #include <string>
-#include "Direction.h""
+#include "Direction.h"
 #include "Logger.h"
+#include "Utils.h"
 
 using namespace std;
 
@@ -17,28 +18,6 @@ using namespace std;
 #define DOCKING_STATION_CELL 'D'
 #define VACUUM_CELL 'R'
 #define EMPTY_CELL ' '
-
-struct Point
-{
-	int i, j;
-
-	bool operator==(const Point& other) const
-	{
-		return (i == other.i && j == other.j);
-	}
-};
-
-namespace std
-{
-    template<> struct hash<Point>
-    {
-        typedef std::size_t result_type;
-        result_type operator()(Point const& s) const
-        {
-            return (s.i << 5) - s.i + s.j;
-        }
-    };
-}
 
 class House
 {
