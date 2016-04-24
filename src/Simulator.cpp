@@ -80,25 +80,30 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 	{
         const char * current = algos.at(i).c_str();
 		dlib = dlopen(current, RTLD_NOW);
-		if (dlib == NULL) {
-            string strError = std::string(current) + "file cannot be loaded ot is not a valid so";
+		if (dlib == NULL)
+		{
+            string strError = std::string(current) + " file cannot be loaded or is not a valid so";
 			Logger::addLogMSG(strError);
 			nErrorCount++;
 		}
 
 		dl_list.insert(dl_list.end(), dlib);
 	}
-    if(algos.size() == 0){
-      string strError = "no algo file in path";
+    if(algos.size() == 0)
+    {
+    	string strError = "no algo file in path";
 		throw  strError.c_str();
     }
 
-	if(nErrorCount == (int)algos.size()){
+	if(nErrorCount == (int)algos.size())
+	{
         string path = algos.at(0);
         path = path.substr(0, path.find_last_of(PATH_SEPARATOR));
         string strError = "All Algorithms files in target '" + path + "' cannot be open or invalid";
 		throw  strError.c_str();
 	}
+
+	return 0;
 }
 
 Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath)
@@ -122,8 +127,8 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 	string line;
     struct stat buf;
 
-    if (stat(sConfigFilePath.c_str(), &buf) == 0){
-        string strError = "config.ini doesn't exists in ' " + sConfigFilePath;
+    if (stat(sConfigFilePath.c_str(), &buf) == -1){
+        string strError = "config.ini doesn't exists in '" + sConfigFilePath + "'";
         throw  strError.c_str();
     }
 
@@ -230,19 +235,16 @@ void Simulator::ReloadAlgorithms()
 
 	m_vAlgos.clear();
 
-
-   map<string, maker_t *>::iterator itr;
-   // create an array of the shape names
-   for(itr=factory.begin(); itr!=factory.end();itr++)
-   {
-        m_vAlgos.push_back(factory[itr->first]());
-   }
+	for(auto itr = factory.begin(); itr != factory.end(); itr++)
+	{
+        m_vAlgos.push_back((itr->second)());
+   	}
 }
 
 // Runs the simulation
 void Simulator::Run()
 {
-	// For every house ran all simulations in paralel
+	// For every house ran all simulations in parallel
 	for(House *pHouse : m_vOriginalHouses)
 	{
 		ReloadAlgorithms();
@@ -273,12 +275,12 @@ void Simulator::Run()
 					// When there is a winner or steps == MaxSteps - MaxStepsAfterWinner algorithm should receive AboutToFinish announcement
 					if(bAnnounceWinner || (nSimulationSteps == (nMaxSimulationSteps - m_config[MAX_STEPS_AFTER_KEY])))
 					{
-						bAnnounceWinner = false;
 						oSim->AnnounceAboutToFinish();
 					}
 
 					// Make a single simulation step
 					oSim->MakeStep();
+					cout << oSim->getHouse() << endl;
 
 					if(oSim->GetSimulationState() == OneSimulation::Finished)
 					{
@@ -297,7 +299,7 @@ void Simulator::Run()
 
 						lastFinnished = oSim;
 
-						// if there was no winner unltil now: save winner steps and remember to announce winner at the beginning of the next round
+						// if there was no winner until now: save winner steps and remember to announce winner at the beginning of the next round
 						if(!bIsWinner)
 						{
 							bIsWinner = true;
@@ -429,31 +431,6 @@ static string trim(string& str)
 // MAIN
 int main(int argsc, char **argv)
 {
-	// 2d Array test
-	TDDA<char> temp;
-
-	cout << temp.exists(-1, -1) <<  temp.exists(-1, 0) << temp.exists(-1, 1) << endl;
-	cout << temp.exists( 0, -1) <<  temp.exists( 0, 0) << temp.exists( 0, 1) << endl;
-	cout << temp.exists( 1, -1) <<  temp.exists( 1, 0) << temp.exists( 1, 1) << endl;
-
-	temp[0][0] = 'A';
-
-	temp[0][1] = 'T';
-
-	temp[0][-1] = 'C';
-
-	temp[-1][0] = 'C';
-
-	temp[1][0] = 'T';
-
-	cout << temp.exists(-1, -1) <<  temp.exists(-1, 0) << temp.exists(-1, 1) << endl;
-	cout << temp.exists( 0, -1) <<  temp.exists( 0, 0) << temp.exists( 0, 1) << endl;
-	cout << temp.exists( 1, -1) <<  temp.exists( 1, 0) << temp.exists( 1, 1) << endl;
-
-	cout << " " 		 <<  temp[-1][0] << " " 		<< endl;
-	cout << temp[ 0][-1] <<  temp[ 0][0] << temp[ 0][1] << endl;
-	cout << " " 		 <<  temp[ 1][0] << " " 		<< endl;
-
 	int i;
 	string sConfigPath = "";
 	string sHousesPath = "";
@@ -479,7 +456,7 @@ int main(int argsc, char **argv)
 		}
 		else
 		{
-			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [�algorithm_path <algorithm path>]" << endl;
+			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [algorithm_path <algorithm path>]" << endl;
 			return 1;
 		}
 	}

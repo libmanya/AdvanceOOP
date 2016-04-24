@@ -133,26 +133,23 @@ Direction _323500942_A::HandleExplore()
 
 Direction _323500942_A::HandleAdvanceToD()
 {
-	static BFS::Path oPathToD;
-	static bool bIsPathInit = false;
-
-	if (!bIsPathInit)
+	if (!m_bIsPathInit)
 	{
 		BFS::BFSResult result;
 		BFS::run(result, m_oMatrix, m_oPos, { 'D' }, m_oNonWallChars);
 
-		BFS::getPath(oPathToD, result);
+		BFS::getPath(m_oPathToD, result);
 
-		bIsPathInit = true;
+		m_bIsPathInit = true;
 	}
 
-	if (oPathToD.hasNext())
+	if (m_oPathToD.hasNext())
 	{
-		return oPathToD.nextStep();
+		return m_oPathToD.nextStep();
 	}
 	else
 	{
-		bIsPathInit = false;
+		m_bIsPathInit = false;
 		m_oCurrentState = AlgoState::AtD;
 		return HandleAtD();
 	}
@@ -189,3 +186,19 @@ void _323500942_A::aboutToFinish(int stepsTillFinishing)
 	m_bAboutTofinish = true;
 	m_stepsTillFinishing = stepsTillFinishing;
 }
+
+extern "C" {
+AbstractAlgorithm *maker(){
+   return new _323500942_A;
+}
+class proxy { 
+public:
+   proxy(){
+      // register the maker with the factory 
+      factory["_323500942_A"] = maker;
+   }
+};
+// our one instance of the proxy
+proxy p;
+}
+

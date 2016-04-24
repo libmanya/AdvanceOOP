@@ -8,14 +8,15 @@
 #ifndef _323500942_C_H_
 #define _323500942_C_H_
 
-#include "Direction.h"
-#include "AbstractAlgorithm.h"
+#include "../Direction.h"
+#include "../AbstractAlgorithm.h"
 #include <cstdlib>
 #include <ctime>
-#include "TwoDDynamicArray.h"
-#include "House.h"
-#include "BFS.h"
-#include "Utils.h"
+#include "../TwoDDynamicArray.h"
+#include "../House.h"
+#include "../BFS.h"
+#include "../Utils.h"
+#include "ExternalAlgo.h"
 
 class _323500942_C : public AbstractAlgorithm
 {
@@ -39,6 +40,11 @@ private:
 	int m_nUnexploredOrDustyCellsCount = 0;
 	TDDA<Direction> m_oPrevStepDirection;
 
+	BFS::Path m_oPathToClean;
+	bool m_bIsPathToCleanInit = false;
+
+	BFS::Path m_oPathToD;
+	bool m_bIsPathToDInit = false;
 public:
 
 	_323500942_C() : m_pSensor(nullptr), m_oPos({ 0, 0 })

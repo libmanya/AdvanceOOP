@@ -130,26 +130,23 @@ Direction _323500942_C::HandleAdvanceToClean()
 		return HandleAdvanceToD();
 	}
 
-	static BFS::Path oPathToClean;
-	static bool bIsPathInit = false;
-
-	if (!bIsPathInit)
+	if (!m_bIsPathToCleanInit)
 	{
 		BFS::BFSResult result;
 		BFS::run(result, m_oMatrix, m_oPos, { '~' , '1', '2', '3', '4', '5', '6', '7', '8', '9'}, m_oNonWallChars);
 
-		BFS::getPath(oPathToClean, result);
+		BFS::getPath(m_oPathToClean, result);
 
-		bIsPathInit = true;
+		m_bIsPathToCleanInit = true;
 	}
 
-	if (oPathToClean.hasNext())
+	if (m_oPathToClean.hasNext())
 	{
-		return oPathToClean.nextStep();
+		return m_oPathToClean.nextStep();
 	}
 	else
 	{
-		bIsPathInit = false;
+		m_bIsPathToCleanInit = false;
 		m_oCurrentState = AlgoState::Clean;
 		return HandleClean();
 	}
@@ -185,26 +182,23 @@ Direction _323500942_C::HandleAdvanceToClean()
 
 Direction _323500942_C::HandleAdvanceToD()
 {
-	static BFS::Path oPathToD;
-	static bool bIsPathInit = false;
-
-	if (!bIsPathInit)
+	if (!m_bIsPathToDInit)
 	{
 		BFS::BFSResult result;
 		BFS::run(result, m_oMatrix, m_oPos, { 'D' }, m_oNonWallChars);
 
-		BFS::getPath(oPathToD, result);
+		BFS::getPath(m_oPathToD, result);
 
-		bIsPathInit = true;
+		m_bIsPathToDInit = true;
 	}
 
-	if (oPathToD.hasNext())
+	if (m_oPathToD.hasNext())
 	{
-		return oPathToD.nextStep();
+		return m_oPathToD.nextStep();
 	}
 	else
 	{
-		bIsPathInit = false;
+		m_bIsPathToDInit = false;
 		m_oCurrentState = AlgoState::AtD;
 		return HandleAtD();
 	}
@@ -240,4 +234,19 @@ void _323500942_C::aboutToFinish(int stepsTillFinishing)
 {
 	m_bAboutTofinish = true;
 	m_stepsTillFinishing = stepsTillFinishing;
+}
+
+extern "C" {
+AbstractAlgorithm *maker(){
+   return new _323500942_C;
+}
+class proxy { 
+public:
+   proxy(){
+      // register the maker with the factory 
+      factory["_323500942_C"] = maker;
+   }
+};
+// our one instance of the proxy
+proxy p;
 }

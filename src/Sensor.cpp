@@ -13,7 +13,7 @@ SensorInformation Sensor::sense() const
 	int i = m_oHouse.GetVacuumPos().i;
 	int j = m_oHouse.GetVacuumPos().j;
 
-	if(m_oHouse[i][j] != 'D')
+	if(m_oHouse[i][j] != 'D' && m_oHouse[i][j] != ' ')
 		si.dirtLevel = m_oHouse[i][j] - '0';
 	else
 		si.dirtLevel = 0;

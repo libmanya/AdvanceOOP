@@ -58,7 +58,14 @@ public:
 		void MakeStep();
 		int getSteps()							const	{ return m_nSteps; };
 		const House& getHouse()					const	{ return m_oHouse; };
-		void AnnounceAboutToFinish()					{ m_pAlgo->aboutToFinish(m_config["MaxStepsAfterWinner"]); };
+		void AnnounceAboutToFinish()
+		{
+			if(!m_bAnnouncedAboutToFinish)
+			{
+				m_pAlgo->aboutToFinish(m_config["MaxStepsAfterWinner"]);
+				m_bAnnouncedAboutToFinish = true;
+			}
+		};
 		int GetActualPositionInCompetition()	const	{ return m_nActualPositionInCompetition; }
 		SimulationStateType GetSimulationState()const	{ return SimulationState; }
 		int CalculateScore(int nWinnerSteps,	bool bIsWinner, int nSimulationSteps)
@@ -67,6 +74,7 @@ public:
 
 	private:
 
+		bool m_bAnnouncedAboutToFinish = false;
 		SimulationStateType SimulationState;
 		House m_oHouse;
 		Sensor m_oSensor;

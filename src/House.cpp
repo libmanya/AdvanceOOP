@@ -98,9 +98,6 @@ House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionR
 		string strError = sPath + " too many Docking Stations";
         Logger::addLogMSG(strError);
 	}
-    else{
-        cout << *this << endl;
-	}
 }
 
 House::House(const House &oFrom)
