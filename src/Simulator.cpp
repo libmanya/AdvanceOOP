@@ -21,8 +21,11 @@
 
 using namespace std;
 
-// our global factory for making shapes
-map<string, maker_t*> factory;
+// our global factory for making Algos
+//map<string, maker_t*> factory22;
+vector<std::pair<string, maker_t*>> factory;
+vector<string> algosNames;
+
 
 /* Returns a list of files in a directory */
 int GetFilesInDirectory(std::vector<string> &out, const string &directory)
@@ -86,9 +89,18 @@ int LoadAlgoFilesToFactory(vector<string> &algos) {
 			Logger::addLogMSG(strError);
 			nErrorCount++;
 		}
-
-		dl_list.insert(dl_list.end(), dlib);
+		else
+       {
+            string name = algos.at(i).c_str();
+            size_t start = name.find_last_of(PATH_SEPARATOR) + 1;
+            name = name.substr(start, name.length());
+            size_t endPoint = name.find_last_of('.');
+            name = name.substr(0, endPoint);
+            algosNames.push_back(name);
+            dl_list.insert(dl_list.end(), dlib);
+		}
 	}
+
     if(algos.size() == 0)
     {
     	string strError = "no algo file in path";
@@ -205,8 +217,14 @@ void Simulator::LoadHouses(const string &sHousesPath)
     GetFilesListWithSuffix(sHousesPath, "house", vDirHousesFiles);
 
 	// load houses
-	for(string &sHouse : vDirHousesFiles)
-		m_vOriginalHouses.push_back(new House(sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
+	for(string &sHouse : vDirHousesFiles){
+        string name = sHouse;
+        size_t start = name.find_last_of(PATH_SEPARATOR) + 1;
+        name = name.substr(start, name.length());
+        size_t endPoint = name.find_last_of('.');
+        name = name.substr(0, endPoint);
+		m_vOriginalHouses.push_back(new House(name, sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
+    }
 }
 
 void Simulator::LoadAlgos(std::vector<string> &vDirAlgosFilesOut, const string &sAlgosPath)
@@ -222,9 +240,11 @@ void Simulator::ReloadSimulations(House *oHouse)
 		delete pSim;
 
 	m_vSimulations.clear();
-
-	for(AbstractAlgorithm *pAlgo : m_vAlgos)
-		m_vSimulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config));
+    int i = 0;
+	for(AbstractAlgorithm *pAlgo : m_vAlgos){
+		m_vSimulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config, algosNames.at(i)));
+		i++;
+    }
 }
 
 // Reloads algorithms
@@ -244,9 +264,11 @@ void Simulator::ReloadAlgorithms()
 // Runs the simulation
 void Simulator::Run()
 {
+    map<string, map<string, int>> scores;
 	// For every house ran all simulations in parallel
 	for(House *pHouse : m_vOriginalHouses)
 	{
+        map<string, int> houseScore;
 		ReloadAlgorithms();
 		ReloadSimulations(pHouse);
 
@@ -280,7 +302,6 @@ void Simulator::Run()
 
 					// Make a single simulation step
 					oSim->MakeStep();
-					cout << oSim->getHouse() << endl;
 
 					if(oSim->GetSimulationState() == OneSimulation::Finished)
 					{
@@ -315,23 +336,42 @@ void Simulator::Run()
 			nSimulationSteps++;
 		}
 
+        string currHouse = "";
+
 		// calculate and print score
 		for(OneSimulation *oSim : m_vSimulations)
 		{
-
 			int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
-			cout << nScore << endl;
+			houseScore[oSim->getAlgoFileName()] = nScore;
+            currHouse = oSim->getHouseFileName();
 		}
 
-		vector<string> log = Logger::getLog();
-		vector<string>::const_iterator itr;
+        if(currHouse != ""){
+            scores[currHouse] = houseScore;
+        }
 
-		for(itr = log.begin(); itr != log.end(); itr++)
-		{
-            cout << *itr << endl;
-		}
-
+        houseScore.clear();
 	}
+
+	//Print Scores
+    map<string, map<string, int>>::const_iterator it;
+    for(it = scores.begin(); it != scores.end(); it++){
+        cout << it->first << endl;
+        map<string, int> mapCurr = it->second;
+        map<string, int>::const_iterator i;
+        for(i = mapCurr.begin(); i != mapCurr.end(); i++){
+            cout << i->first << endl;
+            cout << i->second << endl;
+        }
+    }
+
+    vector<string> log = Logger::getLog();
+    vector<string>::const_iterator itr;
+
+    for(itr = log.begin(); itr != log.end(); itr++)
+    {
+        cout << *itr << endl;
+    }
 }
 
 Simulator::~Simulator()

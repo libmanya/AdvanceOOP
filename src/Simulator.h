@@ -29,7 +29,7 @@ const string HOUSE_PATH_FLAG = "-house_path";
 const string ALGO_PATH_FLAG = "-algorithm_path";
 const string CONFIG_FILE_NAME = "config.ini";
 const string HOUSES_FILE_SUFFIX = ".house";
-const string ALGO_FILE_SUFFIX = "_.so";
+const string ALGO_FILE_SUFFIX = ".so";
 
 using namespace std;
 
@@ -48,12 +48,13 @@ public:
 	public:
 		enum SimulationStateType{ Finished, OutOfBattery, AlgoMadeIllegalMove, Running };
 
-		OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo, map<string, int> &oConfig): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
+		OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo, map<string, int> &oConfig, const string &sAlgoName): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
 		{
 			m_pAlgo->setConfiguration(m_config);
 			m_pAlgo->setSensor(m_oSensor);
 
 			SimulationState = Running;
+			m_sAlgoFileName = sAlgoName;
 		};
 		void MakeStep();
 		int getSteps()							const	{ return m_nSteps; };
@@ -71,6 +72,8 @@ public:
 		int CalculateScore(int nWinnerSteps,	bool bIsWinner, int nSimulationSteps)
 												const;
 		void SetActualPositionInCompetition(int nPos)	{ m_nActualPositionInCompetition = nPos;  }
+		string getHouseFileName()	{ return m_oHouse.GetHouseFileName();}
+		string getAlgoFileName()	{ return m_sAlgoFileName;}
 
 	private:
 
@@ -82,6 +85,7 @@ public:
 		map<string, int> &m_config;
 		int m_nSteps = 0;
 		int m_nActualPositionInCompetition = 0;
+		string m_sAlgoFileName;
 	};
 
 private:

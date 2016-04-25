@@ -224,7 +224,7 @@ class proxy {
 public:
    proxy(){
       // register the maker with the factory 
-      factory["A_323500942_B"] = maker;
+      factory.push_back(std::make_pair("_323500942_B_", maker));
    }
 };
 // our one instance of the proxy

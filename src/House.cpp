@@ -13,13 +13,14 @@
 
 using namespace std;
 
-House::House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate)
+House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate)
 {
 	m_nInitialAmounthOfDirt = 0;
 	m_BatteryLevel = nBatteryCapacity;
 	m_BatteryCapacity = nBatteryCapacity;
 	m_BatteryConsumptionRate = nBatteryConsumptionRate;
 	m_BatteryRechargeRate = nBatteryRechargeRate;
+	m_sHouseFileName = sFileName;
 
 	ifstream fin(sPath);
 
@@ -118,6 +119,7 @@ House &House::operator=(const House &oFrom)
 
 	m_sHouseName = oFrom.m_sHouseName;
 	m_sHouseDesc = oFrom.m_sHouseDesc;
+	m_sHouseFileName = oFrom.m_sHouseFileName;
 	m_VacumPos = oFrom.m_VacumPos;
 	m_nInitialAmounthOfDirt = oFrom.m_nInitialAmounthOfDirt;
 	m_nDirtCollected = oFrom.m_nDirtCollected;

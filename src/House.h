@@ -23,7 +23,7 @@ class House
 {
 public:
 
-	House(const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate);
+	House(const string &sFileName,const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate);
 	House(const House &oFrom);
 	House& operator=(const House &oFrom);
 	friend ostream& operator<<(ostream& out, const House& oHouse);
@@ -39,6 +39,7 @@ public:
 	int GetBatteryLevel() 				const { return m_BatteryLevel; };
 	const string& GetHouseName()		const { return m_sHouseName; };
 	const string& GetHouseDesc()		const { return m_sHouseDesc; };
+	const string& GetHouseFileName()		const { return m_sHouseFileName; };
     int GetMaxSteps() 				const { return m_nMaxSteps; };
 	~House();
 
@@ -46,6 +47,7 @@ private:
 
 	string m_sHouseName;
 	string m_sHouseDesc;
+	string m_sHouseFileName;
 	Point m_VacumPos;
 	int m_nRowNumber;
 	int m_nColNumber;
