@@ -29,7 +29,7 @@ class proxy {
 public:
    proxy(){
       // register the maker with the factory 
-      factory["ALGO_C_"] = maker;
+      factory.push_back(std::make_pair("ALGO_C_", maker));
    }
 };
 // our one instance of the proxy

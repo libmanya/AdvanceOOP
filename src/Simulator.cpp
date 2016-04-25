@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include "Algorithms/ExternalAlgo.h"
 #include "TwoDDynamicArray.h"
+#include <iomanip>
 
 using namespace std;
 
@@ -355,12 +356,24 @@ void Simulator::Run()
 
 	map<string, vector<int>> algosScores;
 
+	int nameWidth = 13;
+	int scoreWidth = 10;
+	const char seperator = '|';
+	const char space = ' ';
+	const char lineSep = '-';
+
+	if(scores.size() > 0){
+        int n = nameWidth + (scores.size() + 1) * scoreWidth + 2 ;
+        cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
+        cout << setw(nameWidth) << setfill(space) << seperator;
+	}
+
 	//parse Scores
     map<string, map<string, int>>::const_iterator it;
     for(it = scores.begin(); it != scores.end(); it++){
         map<string, int> mapCurr = it->second;
         map<string, int>::const_iterator i;
-        cout << it-> first << endl;
+        cout << left << setw(scoreWidth) << setfill(space) << it-> first << seperator;
         for(i = mapCurr.begin(); i != mapCurr.end(); i++){
             if(!algosScores.count(i->first)){
                 string name = it->first;
@@ -376,15 +389,30 @@ void Simulator::Run()
         }
     }
 
+    if(scores.size() > 0){
+        cout << left << setw(scoreWidth) << setfill(space) << "AVG" << seperator << endl;
+        int n = nameWidth + (scores.size() + 1) * scoreWidth + 2 ;
+        cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
+    }
+
     //print Scores
     map<string, vector<int>>::const_iterator iter1;
     for(iter1 = algosScores.begin(); iter1 != algosScores.end(); iter1++){
-        cout << iter1->first << endl;
+        cout << left << setw(nameWidth) << setfill(space) << iter1->first << seperator;
         vector<int> mapCurr = iter1->second;
         vector<int>::const_iterator iter2;
+        int count = 0;
+        int sum = 0;
         for(iter2 = mapCurr.begin(); iter2 != mapCurr.end(); iter2++){
-            cout << *iter2<< endl;
+            cout << left << setw(scoreWidth) << setfill(space) << *iter2 << seperator;
+            count++;
+            sum += *iter2;
         }
+
+        double avg = sum / count;
+        cout << setw(scoreWidth) << setfill(space) << setprecision(3) << avg << seperator<< endl;
+        int n = nameWidth + (scores.size() + 1) * scoreWidth + 2 ;
+        cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
     }
 
     vector<string> log = Logger::getLog();
