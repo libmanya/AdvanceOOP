@@ -353,15 +353,37 @@ void Simulator::Run()
         houseScore.clear();
 	}
 
-	//Print Scores
+	map<string, vector<int>> algosScores;
+
+	//parse Scores
     map<string, map<string, int>>::const_iterator it;
     for(it = scores.begin(); it != scores.end(); it++){
-        cout << it->first << endl;
         map<string, int> mapCurr = it->second;
         map<string, int>::const_iterator i;
+        cout << it-> first << endl;
         for(i = mapCurr.begin(); i != mapCurr.end(); i++){
-            cout << i->first << endl;
-            cout << i->second << endl;
+            if(!algosScores.count(i->first)){
+                string name = it->first;
+                vector<int> houses;
+                houses.push_back(i->second);
+                algosScores[i->first] = houses;
+            }
+            else{
+                vector<int> houses = algosScores[i->first];
+                houses.push_back(i->second);
+                algosScores[i->first] = houses;
+            }
+        }
+    }
+
+    //print Scores
+    map<string, vector<int>>::const_iterator iter1;
+    for(iter1 = algosScores.begin(); iter1 != algosScores.end(); iter1++){
+        cout << iter1->first << endl;
+        vector<int> mapCurr = iter1->second;
+        vector<int>::const_iterator iter2;
+        for(iter2 = mapCurr.begin(); iter2 != mapCurr.end(); iter2++){
+            cout << *iter2<< endl;
         }
     }
 
