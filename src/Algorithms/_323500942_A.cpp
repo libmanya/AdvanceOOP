@@ -5,7 +5,7 @@
  *      Author: iliyaaizin 323500942 & yaronlibman 302730072
  */
 
-#include <vector>
+#include <map>
 #include "_323500942_A.h"
 
 Direction _323500942_A::step()
@@ -195,7 +195,7 @@ class proxy {
 public:
    proxy(){
       // register the maker with the factory 
-      factory.push_back(std::make_pair("_323500942_A_", maker));
+      factory["_323500942_A_"] = maker;
    }
 };
 // our one instance of the proxy

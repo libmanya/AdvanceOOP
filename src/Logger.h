@@ -1,15 +1,20 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
+
 #include <vector>
 #include <string>
+
+using namespace std;
+
 class Logger {
-private:
-  static std::vector<std::string> vcLog;
+
+	static vector<string> vLog;
 
   public:
-    static std::vector<std::string> getLog();
 
-    static void addLogMSG(std::string msg);
+    static const vector<string>& getLog();
+
+    static void addLogMSG(const string &msg);
 };
 
 #endif

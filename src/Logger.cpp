@@ -1,10 +1,13 @@
 #include "Logger.h"
 
-std::vector<std::string> Logger::vcLog;
-std::vector<std::string> Logger::getLog(){
-    return vcLog;
+vector<string> Logger::vLog;
+
+const vector<string>& Logger::getLog()
+{
+    return vLog;
 }
 
-void Logger::addLogMSG(std::string msg){
-    vcLog.push_back(msg);
+void Logger::addLogMSG(const string &msg)
+{
+    vLog.push_back(msg);
 }

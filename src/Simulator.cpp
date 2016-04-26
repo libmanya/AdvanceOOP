@@ -23,8 +23,7 @@
 using namespace std;
 
 // our global factory for making Algos
-//map<string, maker_t*> factory22;
-vector<std::pair<string, maker_t*>> factory;
+map<string, maker_t*> factory;
 vector<string> algosNames;
 
 
@@ -66,7 +65,7 @@ void GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<s
 	vector<string> vDirFiles;
 	GetFilesInDirectory(vDirFiles, sPath);
 
-	for(auto oFileIter = vDirFiles.begin(); oFileIter != vDirFiles.end(); oFileIter++)
+	for(auto oFileIter = vDirFiles.cbegin(); oFileIter != vDirFiles.cend(); oFileIter++)
 	{
 		size_t nPos = oFileIter->find_last_of(".");
 		if(nPos != string::npos && oFileIter->substr(nPos + 1) == sSuffix)
@@ -74,46 +73,66 @@ void GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<s
 	}
 }
 
-int LoadAlgoFilesToFactory(vector<string> &algos) {
-	void *dlib;
-	list<void *> dl_list;
-    map<string, maker_t *>::iterator itr;
+string getFileNameFromPath(const string &sPath, bool bWithExtension)
+{
+    size_t start = sPath.find_last_of(PATH_SEPARATOR) + 1;
+
+    size_t end;
+    if(!bWithExtension)
+    	end = sPath.find_last_of('.');
+    else
+    	end = sPath.length();
+
+    return sPath.substr(start, end - start);
+}
+
+string getFolderPath(const string &sFilePath)
+{
+    return sFilePath.substr(0, sFilePath.find_last_of(PATH_SEPARATOR));
+}
+
+int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
+{
     int nErrorCount = 0;
 
-	for (size_t i = 0; i < algos.size(); i++)
+    if(vAlgoFilesPaths.size() == 0)
+		throw InnerException("no algo file in path");
+
+	void *pDlib;
+	for (const string& sAlgoPath : vAlgoFilesPaths)
 	{
-        const char * current = algos.at(i).c_str();
-		dlib = dlopen(current, RTLD_NOW);
-		if (dlib == NULL)
+		size_t nOldFactorySize = factory.size();
+
+		pDlib = dlopen(sAlgoPath.c_str(), RTLD_NOW);
+		if (pDlib == nullptr)
 		{
-            string strError = std::string(current) + " file cannot be loaded or is not a valid so";
+            string strError = getFileNameFromPath(sAlgoPath, true) + ": file cannot be loaded or is not a valid .so";
 			Logger::addLogMSG(strError);
 			nErrorCount++;
 		}
 		else
-       {
-            string name = algos.at(i).c_str();
-            size_t start = name.find_last_of(PATH_SEPARATOR) + 1;
-            name = name.substr(start, name.length());
-            size_t endPoint = name.find_last_of('.');
-            name = name.substr(0, endPoint);
-            algosNames.push_back(name);
-            dl_list.insert(dl_list.end(), dlib);
+        {
+			if(nOldFactorySize == factory.size())
+			{
+	            string strError = getFileNameFromPath(sAlgoPath, true) + ": valid .so but no algorithm was registered after loading it";
+				Logger::addLogMSG(strError);
+				nErrorCount++;
+			}
+			else
+			{
+				size_t start = sAlgoPath.find_last_of(PATH_SEPARATOR) + 1;
+				size_t end = sAlgoPath.find_last_of('.');
+
+				algosNames.push_back(sAlgoPath.substr(start, end - start));
+			}
 		}
 	}
 
-    if(algos.size() == 0)
-    {
-    	string strError = "no algo file in path";
-		throw  strError.c_str();
-    }
-
-	if(nErrorCount == (int)algos.size())
+	if(nErrorCount == (int)vAlgoFilesPaths.size())
 	{
-        string path = algos.at(0);
-        path = path.substr(0, path.find_last_of(PATH_SEPARATOR));
-        string strError = "All Algorithms files in target '" + path + "' cannot be open or invalid";
-		throw  strError.c_str();
+        string path = vAlgoFilesPaths[0];
+        string strError = "All algorithm files in target folder '" + getFolderPath(path) + "' cannot be opened or are invalid:";
+		throw  InnerException(strError);
 	}
 
 	return 0;
@@ -265,7 +284,7 @@ void Simulator::ReloadAlgorithms()
 // Runs the simulation
 void Simulator::Run()
 {
-    map<string, map<string, int>> scores;
+    map<string, map<string, int>> oScores;
 	// For every house ran all simulations in parallel
 	for(House *pHouse : m_vOriginalHouses)
 	{
@@ -337,24 +356,24 @@ void Simulator::Run()
 			nSimulationSteps++;
 		}
 
-        string currHouse = "";
+        //string currHouse = "";
 
 		// calculate and print score
 		for(OneSimulation *oSim : m_vSimulations)
 		{
 			int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
-			houseScore[oSim->getAlgoFileName()] = nScore;
-            currHouse = oSim->getHouseFileName();
+
+			oScores[oSim->getAlgoFileName()][pHouse->GetHouseFileName()] = nScore;
+			//houseScore[oSim->getAlgoFileName()] = nScore;
+            //currHouse = oSim->getHouseFileName();
 		}
 
-        if(currHouse != ""){
-            scores[currHouse] = houseScore;
-        }
-
-        houseScore.clear();
+        //if(currHouse != ""){
+        //	oScores[currHouse] = houseScore;
+        //}
 	}
 
-	map<string, vector<int>> algosScores;
+	//map<string, vector<int>> algosScores;
 
 	int nameWidth = 13;
 	int scoreWidth = 10;
@@ -362,15 +381,15 @@ void Simulator::Run()
 	const char space = ' ';
 	const char lineSep = '-';
 
-	if(scores.size() > 0){
-        int n = nameWidth + (scores.size() + 1) * scoreWidth + 2 ;
+/*	if(oScores.size() > 0){
+        int n = nameWidth + (oScores.size() + 1) * scoreWidth + 2 ;
         cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
         cout << setw(nameWidth) << setfill(space) << seperator;
 	}
 
 	//parse Scores
     map<string, map<string, int>>::const_iterator it;
-    for(it = scores.begin(); it != scores.end(); it++){
+    for(it = oScores.begin(); it != oScores.end(); it++){
         map<string, int> mapCurr = it->second;
         map<string, int>::const_iterator i;
         cout << left << setw(scoreWidth) << setfill(space) << it-> first << seperator;
@@ -389,15 +408,14 @@ void Simulator::Run()
         }
     }
 
-    if(scores.size() > 0){
+    if(oScores.size() > 0){
         cout << left << setw(scoreWidth) << setfill(space) << "AVG" << seperator << endl;
-        int n = nameWidth + (scores.size() + 1) * scoreWidth + 2 ;
+        int n = nameWidth + (oScores.size() + 1) * scoreWidth + 2 ;
         cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
     }
 
     //print Scores
-    map<string, vector<int>>::const_iterator iter1;
-    for(iter1 = algosScores.begin(); iter1 != algosScores.end(); iter1++){
+    for(auto iter1 = algosScores.begin(); iter1 != algosScores.end(); iter1++){
         cout << left << setw(nameWidth) << setfill(space) << iter1->first << seperator;
         vector<int> mapCurr = iter1->second;
         vector<int>::const_iterator iter2;
@@ -411,16 +429,48 @@ void Simulator::Run()
 
         double avg = sum / count;
         cout << setw(scoreWidth) << setfill(space) << setprecision(3) << avg << seperator<< endl;
-        int n = nameWidth + (scores.size() + 1) * scoreWidth + 2 ;
+        int n = nameWidth + (oScores.size() + 1) * scoreWidth + 2 ;
         cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
-    }
+    }*/
 
-    vector<string> log = Logger::getLog();
-    vector<string>::const_iterator itr;
 
-    for(itr = log.begin(); itr != log.end(); itr++)
+	// print scores table
+    int nLineN = nameWidth + 2 + (m_vOriginalHouses.size() + 1) * (scoreWidth + 1);
+
+    cout << setw(nLineN) << setfill(lineSep)<<  lineSep << endl;
+
+    cout << seperator << setw(nameWidth) << setfill(space) << "" << seperator;
+
+    // print house names
+	for(const auto &oHousesScoresPair : oScores[algosNames[0]])
+	{
+        cout << left << setw(scoreWidth) << setfill(space) << oHousesScoresPair.first << seperator;
+	}
+
+	cout << left << setw(scoreWidth) << setfill(space) << "AVG" << seperator << endl;
+
+    cout << setw(nLineN) << setfill(lineSep)<<  lineSep << endl;
+    // for each algorithm: print scores
+    for(const auto &oAlgoHousesPair: oScores)
     {
-        cout << *itr << endl;
+    	cout << seperator << left << setw(nameWidth) << setfill(space) << oAlgoHousesPair.first << seperator;
+
+        int nCount = 0;
+        int nSum = 0;
+
+        // for every house that algorithm ran on: print the score
+    	for(const auto &oHousesScoresPair : oAlgoHousesPair.second)
+    	{
+            cout << right << setw(scoreWidth) << setfill(space) << oHousesScoresPair.second << seperator;
+
+            nCount++;
+            nSum += oHousesScoresPair.second;
+    	}
+
+        double dAvg = nSum / (double)nCount;
+        cout << setw(scoreWidth) << setfill(space) << fixed << setprecision(2) << dAvg << seperator<< endl;
+
+        cout << setw(nLineN) << setfill(lineSep)<<  lineSep << endl;
     }
 }
 
@@ -581,16 +631,17 @@ int main(int argsc, char **argv)
 		Simulator sim(sConfigPath, sHousesPath, sAlgosPath);
 		sim.Run();
 	}
-	catch (const char* msg)
+	catch (exception& ex)
 	{
-		cout << msg << endl;
-				vector<string> log = Logger::getLog();
-		vector<string>::const_iterator itr;
+		cout << ex.what() << endl;
+	}
 
-		for(itr = log.begin(); itr != log.end(); itr++)
-		{
-            cout << *itr << endl;
-		}
+	if(Logger::getLog().size() != 0)
+		cout << endl <<"Errors:" << endl;
+
+	for(const string &sLogEntry : Logger::getLog())
+	{
+        cout << sLogEntry << endl;
 	}
 
 	return 0;

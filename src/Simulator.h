@@ -15,6 +15,7 @@
 #include <map>
 #include "Logger.h"
 #include "Utils.h"
+#include <exception>
 
 #if defined(WIN32) || defined(_WIN32)
 #define PATH_SEPARATOR '\\'
@@ -101,4 +102,16 @@ private:
 	vector<AbstractAlgorithm*> m_vAlgos;
 
 	map<string, int> m_config;
+};
+
+struct InnerException : public exception
+{
+  const string m_sMsg;
+
+  InnerException(const string&  sMsg) : m_sMsg(sMsg) {};
+
+  const char * what () const noexcept (true) override
+  {
+    return m_sMsg.c_str();;
+  }
 };
