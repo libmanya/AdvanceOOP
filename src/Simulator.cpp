@@ -174,14 +174,16 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 	while (getline(fin, line))
 	{
-		stringstream ss(line);
-		string item;
-		vector<string> tokens;
-		while (getline(ss, item, '=')) {
-			tokens.push_back(item);
-		}
+        if(line.length() > 0) {
+            stringstream ss(line);
+            string item;
+            vector<string> tokens;
+            while (getline(ss, item, '=')) {
+                tokens.push_back(item);
+            }
 
-		m_config[trim(tokens[0])] = stoi(trim(tokens[1]));
+            m_config[trim(tokens[0])] = stoi(trim(tokens[1]));
+		}
 	}
 
     int nMissingCount = 0;
