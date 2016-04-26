@@ -12,9 +12,13 @@ class Logger {
 
   public:
 
-    static const vector<string>& getLog();
+    static const vector<string>& getLog(){
+		return vLog;
+	}
 
-    static void addLogMSG(const string &msg);
+    static void addLogMSG(const string &msg){
+		vLog.push_back(msg);
+	}
 };
 
 #endif

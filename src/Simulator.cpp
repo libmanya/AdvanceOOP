@@ -25,7 +25,7 @@ using namespace std;
 // our global factory for making Algos
 map<string, maker_t*> factory;
 vector<string> algosNames;
-
+vector<string> Logger::vLog;
 
 /* Returns a list of files in a directory */
 int GetFilesInDirectory(std::vector<string> &out, const string &directory)
