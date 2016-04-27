@@ -41,6 +41,7 @@ public:
 	const string& GetHouseDesc()		const { return m_sHouseDesc; };
 	const string& GetHouseFileName()		const { return m_sHouseFileName; };
     int GetMaxSteps() 				const { return m_nMaxSteps; };
+    bool isLoadFailed() 				const { return m_bisLoadFail; };
 	~House();
 
 private:
@@ -52,6 +53,7 @@ private:
 	int m_nRowNumber;
 	int m_nColNumber;
 	char **m_pMap;
+	bool m_bisLoadFail;
 
 	//House max Steps
 	int m_nMaxSteps;

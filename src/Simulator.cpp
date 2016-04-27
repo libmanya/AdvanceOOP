@@ -244,7 +244,18 @@ void Simulator::LoadHouses(const string &sHousesPath)
         name = name.substr(start, name.length());
         size_t endPoint = name.find_last_of('.');
         name = name.substr(0, endPoint);
-		m_vOriginalHouses.push_back(new House(name, sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]));
+        House tempHouse = new House(name, sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]);
+        if (tempHouse.isLoadFailed()){
+            delete tempHouse;
+        }
+        else{
+            m_vOriginalHouses.push_back(tempHouse);
+        }
+    }
+
+    if (this.m_vOriginalHouses.size() == 0){
+        string strError = std::string("all house files in target") + sHousesPath + std::string(" parameter(s) : ") + strMissingParams;
+        throw InnerException(strError);
     }
 }
 

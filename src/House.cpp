@@ -21,6 +21,7 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 	m_BatteryConsumptionRate = nBatteryConsumptionRate;
 	m_BatteryRechargeRate = nBatteryRechargeRate;
 	m_sHouseFileName = sFileName;
+	m_bisLoadFail = false;
 
 	ifstream fin(sPath);
 
@@ -28,6 +29,7 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 	{
         string strError = sPath + "File cannot open";
         Logger::addLogMSG(strError);
+        m_bisLoadFail = true;
         return;
 	}
 
@@ -94,10 +96,12 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 	if (nDockingCount == 0) {
 		string strError = sPath + " Missing Docking Station";
         Logger::addLogMSG(strError);
+        m_bisLoadFail = true;
 	}
 	else if (nDockingCount > 1) {
 		string strError = sPath + " too many Docking Stations";
         Logger::addLogMSG(strError);
+        m_bisLoadFail = true;
 	}
 }
 
