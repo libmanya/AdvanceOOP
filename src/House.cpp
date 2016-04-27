@@ -35,6 +35,10 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 
 	string sTemp;
 
+	size_t start = sPath.find_last_of('/') + 1;
+	size_t end = sPath.size();
+	string fileName = sPath.substr(start, end - start);
+
 	std::getline(fin, m_sHouseName);
 
 	std::getline(fin, sTemp);
@@ -42,8 +46,21 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 
 	std::getline(fin, sTemp);
 	m_nRowNumber = atoi(sTemp.c_str());
+
+	if(m_nRowNumber < 1){
+        string strError = "line number 3 in house file shall be a positive number, found: " + m_nRowNumber;
+        Logger::addLogMSG(strError);
+        m_bisLoadFail = true;
+	}
+
 	std::getline(fin, sTemp);
 	m_nColNumber = atoi(sTemp.c_str());
+
+	if(m_nColNumber < 1){
+        string strError = "line number 3 in house file shall be a positive number, found: " + m_nColNumber;
+        Logger::addLogMSG(strError);
+        m_bisLoadFail = true;
+	}
 
 	// allocate map
 	m_pMap = new char*[m_nRowNumber];
@@ -93,10 +110,6 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 			}
 		}
 
-	size_t start = sPath.find_last_of('/') + 1;
-	size_t end = sPath.size();
-	string fileName = sPath.substr(start, end - start);
-		
 	if (nDockingCount == 0) {
 		string strError = fileName + " Missing Docking Station";
         Logger::addLogMSG(strError);
