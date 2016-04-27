@@ -48,7 +48,7 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 	m_nRowNumber = atoi(sTemp.c_str());
 
 	if(m_nRowNumber < 1){
-        string strError = "line number 3 in house file shall be a positive number, found: " + m_nRowNumber;
+        string strError = fileName + " line number 3 in house file shall be a positive number, found: " + std::to_string(m_nRowNumber);
         Logger::addLogMSG(strError);
         m_bisLoadFail = true;
 	}
@@ -57,7 +57,7 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 	m_nColNumber = atoi(sTemp.c_str());
 
 	if(m_nColNumber < 1){
-        string strError = "line number 3 in house file shall be a positive number, found: " + m_nColNumber;
+        string strError = fileName + " line number 4 in house file shall be a positive number, found: " +std::to_string(m_nColNumber);
         Logger::addLogMSG(strError);
         m_bisLoadFail = true;
 	}
