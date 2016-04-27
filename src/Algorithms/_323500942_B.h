@@ -1,5 +1,5 @@
 /*
- * NaiveAlgo.h
+ * _323500942_B.h
  *
  *  Created on: 19 Mar 2016
  *      Author: iliyaaizin 323500942 & yaronlibman 302730072

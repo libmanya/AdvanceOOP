@@ -1,5 +1,5 @@
 /*
- * NaiveAlgo.cpp
+ * _323500942_C.cpp
  *
  *  Created on: 19 Mar 2016
  *      Author: iliyaaizin 323500942 & yaronlibman 302730072
@@ -150,32 +150,6 @@ Direction _323500942_C::HandleAdvanceToClean()
 		m_oCurrentState = AlgoState::Clean;
 		return HandleClean();
 	}
-	/*if (m_oMatrix[m_oPos] >= '1' && m_oMatrix[m_oPos] <= '9')
-	{
-		m_oCurrentState = AlgoState::Clean;
-		return HandleClean();
-	}
-
-	// set default previous direction to West (so the first step will be northward)
-	if (!m_oPrevStepDirection.exists(m_oPos))
-	{
-		m_oPrevStepDirection[m_oPos] = Direction::West;
-	}
-
-	Direction oPrevStep = m_oPrevStepDirection[m_oPos];
-
-	// move towards first non-wall direction, order: north, east, south, west, north, ...
-	int nRealIndex;
-	for (int i = DirToInt(oPrevStep) + 1; i <= DirToInt(oPrevStep) + 4; i++)
-	{
-		nRealIndex = i % 4;
-		Direction oDir = intToDir(nRealIndex);
-		if (m_oMatrix[NeighbourTo(m_oPos, oDir)] != 'W')
-		{
-			m_oPrevStepDirection[m_oPos] = oDir;
-			return oDir;
-		}
-	}*/
 			
 	return Direction::Stay;
 }
