@@ -1,5 +1,5 @@
 /*
- * Simulator`.cpp
+ * Simulator.cpp
  *
  *  Created on: Mar 15, 2016
  *      Author: iliyaaizin 323500942 & yaronlibman 302730072
@@ -17,13 +17,15 @@
 #include <sys/stat.h>
 #include "Algorithms/ExternalAlgo.h"
 #include <iomanip>
+#include <stdlib.h>
 
 using namespace std;
 
 // our global factory for making Algos
 map<string, maker_t*> factory;
-vector<string> algosNames;
-vector<string> Logger::vLog;
+
+vector<string> Logger::vHousesLog;
+vector<string> Logger::vAlgosLog;
 
 /* Returns a list of files in a directory */
 int GetFilesInDirectory(std::vector<string> &out, const string &directory)
@@ -57,11 +59,14 @@ int GetFilesInDirectory(std::vector<string> &out, const string &directory)
 }
 
 
-void GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<string> &vDirTypeFiles)
+int GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<string> &vDirTypeFiles)
 {
 	// find house files
 	vector<string> vDirFiles;
-	GetFilesInDirectory(vDirFiles, sPath);
+	int nRc = GetFilesInDirectory(vDirFiles, sPath);
+
+	if(nRc == -1)
+		return -1;
 
 	for(auto oFileIter = vDirFiles.cbegin(); oFileIter != vDirFiles.cend(); oFileIter++)
 	{
@@ -69,6 +74,8 @@ void GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<s
 		if(nPos != string::npos && oFileIter->substr(nPos + 1) == sSuffix)
 			vDirTypeFiles.push_back(*oFileIter);
 	}
+
+	return 0;
 }
 
 string getFileNameFromPath(const string &sPath, bool bWithExtension)
@@ -89,12 +96,23 @@ string getFolderPath(const string &sFilePath)
     return sFilePath.substr(0, sFilePath.find_last_of(PATH_SEPARATOR));
 }
 
-int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
+// constructs full path from relative path
+string GetFullPath(const string& sRelativePath)
+{
+	char pActualpath[PATH_MAX+1];
+	char *ptr;
+
+	ptr = realpath(sRelativePath.c_str(), pActualpath);
+
+	return string(ptr);
+}
+
+int Simulator::LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 {
     int nErrorCount = 0;
 
     if(vAlgoFilesPaths.size() == 0)
-		throw InnerException("no algo file in path");
+		throw InnerException(USAGE);
 
 	void *pDlib;
 	for (const string& sAlgoPath : vAlgoFilesPaths)
@@ -104,9 +122,8 @@ int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 		pDlib = dlopen(sAlgoPath.c_str(), RTLD_NOW);
 		if (pDlib == nullptr)
 		{
-			cout << dlerror() << endl;
             string strError = getFileNameFromPath(sAlgoPath, true) + ": file cannot be loaded or is not a valid .so";
-			Logger::addLogMSG(strError);
+			Logger::addLogMSG(strError, Logger::LogType::Algos);
 			nErrorCount++;
 		}
 		else
@@ -114,7 +131,7 @@ int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 			if(nOldFactorySize == factory.size())
 			{
 	            string strError = getFileNameFromPath(sAlgoPath, true) + ": valid .so but no algorithm was registered after loading it";
-				Logger::addLogMSG(strError);
+				Logger::addLogMSG(strError, Logger::LogType::Algos);
 				nErrorCount++;
 			}
 			else
@@ -122,17 +139,22 @@ int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 				size_t start = sAlgoPath.find_last_of(PATH_SEPARATOR) + 1;
 				size_t end = sAlgoPath.find_last_of('.');
 
-				algosNames.push_back(sAlgoPath.substr(start, end - start));
+				m_vAlgoFileNames.push_back(sAlgoPath.substr(start, end - start));
 			}
+
+			m_vAlgoLibHandles.push_back(pDlib);
 		}
 	}
 
 	if(nErrorCount == (int)vAlgoFilesPaths.size())
 	{
         string path = vAlgoFilesPaths[0];
-        string strError = "All algorithm files in target folder '" + getFolderPath(path) + "' cannot be opened or are invalid:";
+        string strError = "All algorithm files in target folder '" + GetFullPath(getFolderPath(path)) + "' cannot be opened or are invalid:";
 		throw  InnerException(strError);
 	}
+
+	// lexicographically sort algo file names (needed to correctly display score table)
+	std::sort(m_vAlgoFileNames.begin(), m_vAlgoFileNames.end());
 
 	return 0;
 }
@@ -145,11 +167,11 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
 	//Read Configuration File to members
 	ReadConfig(sConfigFilePath);
 
+	GetSOFiles(vDirAlgosFiles, sAlgosPath);
+	LoadAlgoFilesToFactory(vDirAlgosFiles);
+
 	// Load houses
 	LoadHouses(sHousesPath);
-
-	LoadAlgos(vDirAlgosFiles, sAlgosPath);
-	LoadAlgoFilesToFactory(vDirAlgosFiles);
 }
 
 // Reads configuration file and sets m_config keys
@@ -158,16 +180,14 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 	string line;
     struct stat buf;
 
-    if (stat(sConfigFilePath.c_str(), &buf) == -1){
-        string strError = "config.ini doesn't exists in '" + sConfigFilePath + "'";
-        throw  InnerException(strError);
-    }
+    if (stat(sConfigFilePath.c_str(), &buf) == -1)
+        throw  InnerException(USAGE);
 
     ifstream fin(sConfigFilePath);
 	//check if file open with path, if not try open file in current dir
 	if (!fin)
 	{
-		string strError = "config.ini exists in ' " + sConfigFilePath + "' but cannot be opened";
+		string strError = "config.ini exists in '" + GetFullPath(sConfigFilePath) + "' but cannot be opened";
 		throw  InnerException(strError);
 	}
 
@@ -189,36 +209,34 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
     string strMissingParams = "";
 
 	//Checking all config paramters
-	if (m_config.find(BATTERY_CAPACITY_KEY) == m_config.end()){
+	if (m_config.find(BATTERY_CAPACITY_KEY) == m_config.end())
+	{
         nMissingCount++;
         strMissingParams += BATTERY_CAPACITY_KEY;
 	}
 
-	if (m_config.find(BATTERY_CONSUMPTION_KEY) == m_config.end()){
+	if (m_config.find(BATTERY_CONSUMPTION_KEY) == m_config.end())
+	{
         if(nMissingCount != 0)
-        {
             strMissingParams += ", ";
-        }
 
         nMissingCount++;
         strMissingParams += BATTERY_CONSUMPTION_KEY;
 	}
 
-	if (m_config.find(BATTERY_RECHARGE_KEY) == m_config.end()){
-	        if(nMissingCount != 0)
-        {
+	if (m_config.find(BATTERY_RECHARGE_KEY) == m_config.end())
+	{
+	    if(nMissingCount != 0)
             strMissingParams += ", ";
-        }
 
         nMissingCount++;
         strMissingParams += BATTERY_RECHARGE_KEY;
 	}
 
-	if (m_config.find(MAX_STEPS_AFTER_KEY) == m_config.end()){
-	        if(nMissingCount != 0)
-        {
+	if (m_config.find(MAX_STEPS_AFTER_KEY) == m_config.end())
+	{
+	    if(nMissingCount != 0)
             strMissingParams += ", ";
-        }
 
         nMissingCount++;
         strMissingParams += MAX_STEPS_AFTER_KEY;
@@ -226,45 +244,41 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 	if(nMissingCount != 0)
 	{
-        string strError = std::string("config.ini missing ") + std::to_string(nMissingCount) + std::string(" parameter(s) : ") + strMissingParams;
+        string strError = std::string("config.ini missing ") + std::to_string(nMissingCount) + std::string(" parameter(s): ") + strMissingParams;
         throw InnerException(strError);
 	}
 }
 
-// Initializes houses (In exercise 1 there is only 1 hard-coded house)
+// Initializes houses
 void Simulator::LoadHouses(const string &sHousesPath)
 {
     vector<string> vDirHousesFiles;
-    GetFilesListWithSuffix(sHousesPath, "house", vDirHousesFiles);
+    int nRC = GetFilesListWithSuffix(sHousesPath, "house", vDirHousesFiles);
 
-    if (vDirHousesFiles.size() == 0){
-        string strError = "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [algorithm_path <algorithm path>]";
-        throw InnerException(strError);
-    }
+    if (nRC == -1 || vDirHousesFiles.size() == 0)
+        throw InnerException(USAGE);
 
 	// load houses
-	for(string &sHouse : vDirHousesFiles){
-        string name = sHouse;
-        size_t start = name.find_last_of(PATH_SEPARATOR) + 1;
-        name = name.substr(start, name.length());
-        size_t endPoint = name.find_last_of('.');
-        name = name.substr(0, endPoint);
-        House* tempHouse = new House(name, sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]);
-        if (tempHouse->isLoadFailed()){
-            delete tempHouse;
-        }
-        else{
-            m_vOriginalHouses.push_back(tempHouse);
-        }
+	for(string &sHouse : vDirHousesFiles)
+	{
+        string sHouseFileName = getFileNameFromPath(sHouse, false);
+
+        House* pTempHouse = new House(std::move(sHouseFileName), sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]);
+
+        if (pTempHouse->isLoadFailed())
+            delete pTempHouse;
+        else
+            m_vOriginalHouses.push_back(pTempHouse);
     }
 
-    if (m_vOriginalHouses.size() == 0){
-        string strError = std::string("all house files in target") + sHousesPath + std::string("cannot be opened or are invalid:");
+    if (m_vOriginalHouses.size() == 0)
+    {
+        string strError = string("All house files in target folder '") + GetFullPath(sHousesPath) + std::string("' cannot be opened or are invalid:");
         throw InnerException(strError);
     }
 }
 
-void Simulator::LoadAlgos(std::vector<string> &vDirAlgosFilesOut, const string &sAlgosPath)
+void Simulator::GetSOFiles(std::vector<string> &vDirAlgosFilesOut, const string &sAlgosPath)
 {
 	// find house files
     GetFilesListWithSuffix(sAlgosPath, "so", vDirAlgosFilesOut);
@@ -278,8 +292,9 @@ void Simulator::ReloadSimulations(House *oHouse)
 
 	m_vSimulations.clear();
     int i = 0;
-	for(AbstractAlgorithm *pAlgo : m_vAlgos){
-		m_vSimulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config, algosNames.at(i)));
+	for(AbstractAlgorithm *pAlgo : m_vAlgos)
+	{
+		m_vSimulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config, m_vAlgoFileNames[i]));
 		i++;
     }
 }
@@ -397,7 +412,7 @@ void Simulator::Run()
     cout << seperator << setw(nameWidth) << setfill(space) << "" << seperator;
 
     // print house names
-	for(const auto &oHousesScoresPair : oScores[algosNames[0]])
+	for(const auto &oHousesScoresPair : oScores[m_vAlgoFileNames[0]])
 	{
         cout << left << setw(scoreWidth) << setfill(space) << oHousesScoresPair.first << seperator;
 	}
@@ -439,6 +454,9 @@ Simulator::~Simulator()
 
 	for(House *pHouse : m_vOriginalHouses)
 		delete pHouse;
+
+	for(auto pHandle : m_vAlgoLibHandles)
+		dlclose(pHandle);
 }
 
 // Make single simulation step
@@ -516,7 +534,7 @@ int Simulator::OneSimulation::CalculateScore(int nWinnerSteps, bool bIsWinner, i
 	return nScore;
 }
 
-static string trim(string& str)
+string trim(string& str)
 {
 	str.erase(0, str.find_first_not_of(' '));
 	str.erase(str.find_last_not_of(' ') + 1);
@@ -551,22 +569,15 @@ int main(int argsc, char **argv)
 		}
 		else
 		{
-			cout << "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [algorithm_path <algorithm path>]" << endl;
+			cout << USAGE << endl;
 			return 1;
 		}
 	}
 
-    if(sConfigPath.length() != 0)
-    {
-        sConfigPath = sConfigPath.length() == 0 ? "." : sConfigPath;
-        // Add config Path dir sign id needed
-        if (sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
-            sConfigPath += PATH_SEPARATOR;
-    }
-    else
-    {
-        sConfigPath = "./";
-    }
+	sConfigPath = sConfigPath.length() == 0 ? "." : sConfigPath;
+	// Add config Path dir sign id needed
+	if (sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
+		sConfigPath += PATH_SEPARATOR;
 
 	// Concat file name
 	sConfigPath += CONFIG_FILE_NAME;
@@ -585,19 +596,20 @@ int main(int argsc, char **argv)
 	{
 		Simulator sim(sConfigPath, sHousesPath, sAlgosPath);
 		sim.Run();
+
+		if(Logger::getLog(Logger::LogType::Houses).size() != 0 || Logger::getLog(Logger::LogType::Algos).size())
+			cout << endl <<"Errors:" << endl;
 	}
 	catch (exception& ex)
 	{
 		cout << ex.what() << endl;
 	}
 
-	if(Logger::getLog().size() != 0)
-		cout << endl <<"Errors:" << endl;
-
-	for(const string &sLogEntry : Logger::getLog())
-	{
+	for(const string &sLogEntry : Logger::getLog(Logger::LogType::Houses, true))
         cout << sLogEntry << endl;
-	}
+
+	for(const string &sLogEntry : Logger::getLog(Logger::LogType::Algos, true))
+        cout << sLogEntry << endl;
 
 	return 0;
 }

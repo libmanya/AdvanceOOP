@@ -1,5 +1,5 @@
 /*
-* Simulator.cpp
+* House.cpp
 *
 *  Created on: Mar 15, 2016
 *      Author: iliyaaizin 323500942 & yaronlibman 302730072
@@ -27,46 +27,50 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 
 	if(!fin)
 	{
-        string strError = sPath + "File cannot open";
-        Logger::addLogMSG(strError);
+        string strError = sFileName + HOUSES_FILE_SUFFIX + ": cannot open file";
+        Logger::addLogMSG(strError, Logger::LogType::Houses);
         m_bisLoadFail = true;
         return;
 	}
 
 	string sTemp;
-
-	size_t start = sPath.find_last_of('/') + 1;
-	size_t end = sPath.size();
-	string fileName = sPath.substr(start, end - start);
-
 	std::getline(fin, m_sHouseName);
 
 	std::getline(fin, sTemp);
 	m_nMaxSteps = atoi(sTemp.c_str());
 	
-	if(m_nMaxSteps < 1){
-        string strError = fileName + " line number 2 in house file shall be a positive number, found: " + std::to_string(m_nMaxSteps);
-        Logger::addLogMSG(strError);
+	if(m_nMaxSteps < 1)
+	{
+        string strError = m_sHouseFileName + HOUSES_FILE_SUFFIX + ": line number 2 in house file shall be a positive number, found: " + to_string(m_nMaxSteps);
+        Logger::addLogMSG(strError, Logger::LogType::Houses);
         m_bisLoadFail = true;
+        m_nRowNumber = 0; // so not allocated arrays will not be deleted in dector
+        return;
 	}
 
 
 	std::getline(fin, sTemp);
 	m_nRowNumber = atoi(sTemp.c_str());
 
-	if(m_nRowNumber < 1){
-        string strError = fileName + " line number 3 in house file shall be a positive number, found: " + std::to_string(m_nRowNumber);
-        Logger::addLogMSG(strError);
+	if(m_nRowNumber < 1)
+	{
+        string strError = m_sHouseFileName + HOUSES_FILE_SUFFIX + ": line number 3 in house file shall be a positive number, found: " + to_string(m_nRowNumber);
+        Logger::addLogMSG(strError, Logger::LogType::Houses);
         m_bisLoadFail = true;
+        m_nRowNumber = 0; // so not allocated arrays will not be deleted in dector
+        return;
 	}
 
 	std::getline(fin, sTemp);
 	m_nColNumber = atoi(sTemp.c_str());
 
-	if(m_nColNumber < 1){
-        string strError = fileName + " line number 4 in house file shall be a positive number, found: " +std::to_string(m_nColNumber);
-        Logger::addLogMSG(strError);
+	if(m_nColNumber < 1)
+	{
+        string strError = m_sHouseFileName + HOUSES_FILE_SUFFIX + ": line number 4 in house file shall be a positive number, found: " + to_string(m_nColNumber);
+        Logger::addLogMSG(strError, Logger::LogType::Houses);
         m_bisLoadFail = true;
+        m_nRowNumber = 0;
+        return;
 	}
 
 	// allocate map
@@ -74,10 +78,20 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 	for(int i = 0; i < m_nRowNumber; i++)
 		m_pMap[i] = new char[m_nColNumber];
 
-	for(int i = 0; i < m_nRowNumber; i++)
+	int i;
+	for(i = 0; i < m_nRowNumber && getline(fin, sTemp); i++)
 	{
-		std::getline(fin, sTemp);
-		memcpy(m_pMap[i], sTemp.c_str(), std::min((int)sTemp.length(), m_nColNumber));
+		int nActualCellsInRow = std::min((int)sTemp.length(), m_nColNumber);
+		memcpy(m_pMap[i], sTemp.c_str(), nActualCellsInRow);
+
+		if( nActualCellsInRow < m_nColNumber)
+			memset(m_pMap[i] + nActualCellsInRow, EMPTY_CELL, m_nColNumber - nActualCellsInRow);
+	}
+
+	// fill missing lines with empty cell
+	for(; i < m_nRowNumber; i++)
+	{
+		memset(m_pMap[i], EMPTY_CELL, m_nColNumber);
 	}
 
 	int nDockingCount = 0;
@@ -117,15 +131,19 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 			}
 		}
 
-	if (nDockingCount == 0) {
-		string strError = fileName + " Missing Docking Station";
-        Logger::addLogMSG(strError);
+	if (nDockingCount == 0)
+	{
+		string strError = m_sHouseFileName + HOUSES_FILE_SUFFIX + ": missing docking station (no D in house)";
+        Logger::addLogMSG(strError, Logger::LogType::Houses);
         m_bisLoadFail = true;
+        return;
 	}
-	else if (nDockingCount > 1) {
-		string strError = fileName + " too many Docking Stations";
-        Logger::addLogMSG(strError);
+	else if (nDockingCount > 1)
+	{
+		string strError = m_sHouseFileName + HOUSES_FILE_SUFFIX + ": too many docking stations (more than one D in house)";
+        Logger::addLogMSG(strError, Logger::LogType::Houses);
         m_bisLoadFail = true;
+        return;
 	}
 }
 
@@ -136,7 +154,7 @@ House::House(const House &oFrom)
     m_nMaxSteps = oFrom.GetMaxSteps();
 	m_pMap = nullptr;
 
-	// constract using operator =
+	// Construct using operator =
     *this = oFrom;
 }
 
@@ -146,7 +164,6 @@ House &House::operator=(const House &oFrom)
 		return *this;
 
 	m_sHouseName = oFrom.m_sHouseName;
-	m_sHouseDesc = oFrom.m_sHouseDesc;
 	m_sHouseFileName = oFrom.m_sHouseFileName;
 	m_VacumPos = oFrom.m_VacumPos;
 	m_nInitialAmounthOfDirt = oFrom.m_nInitialAmounthOfDirt;
@@ -157,7 +174,7 @@ House &House::operator=(const House &oFrom)
 	m_BatteryRechargeRate = oFrom.m_BatteryRechargeRate;
     m_nMaxSteps = oFrom.GetMaxSteps();
 
-	// if dimentions don't agree free current map allocation and reallocate
+	// if dimensions don't agree free current map allocation and reallocate
 	if(m_nRowNumber != oFrom.m_nRowNumber || m_nColNumber != oFrom.m_nColNumber)
 	{
 		for(int i = 0; i < m_nRowNumber; i++)
@@ -194,7 +211,6 @@ ostream& operator<<(ostream& out, const House& oHouse)
 {
 	out << "=== Printing house ===" << endl;
 	out << "	Name: " << oHouse.m_sHouseName << endl;
-	out << "	Description: " << oHouse.m_sHouseDesc << endl;
 	out << "	House map:" << endl;
 
 	for (int i = 0; i < oHouse.m_nRowNumber; i++)

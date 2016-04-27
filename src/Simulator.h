@@ -23,16 +23,17 @@
 #define PATH_SEPARATOR '/'
 #endif
 
-static std::string trim(std::string& str);
-
 const string CONFIG_PATH_FLAG = "-config";
 const string HOUSE_PATH_FLAG = "-house_path";
 const string ALGO_PATH_FLAG = "-algorithm_path";
 const string CONFIG_FILE_NAME = "config.ini";
-const string HOUSES_FILE_SUFFIX = ".house";
 const string ALGO_FILE_SUFFIX = ".so";
 
+const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>]";
+
 using namespace std;
+
+string trim(string& str);
 
 class Simulator
 {
@@ -93,15 +94,18 @@ private:
 
 	void ReadConfig(const string &sConfigFilePath);
 	void LoadHouses(const string &sHousesPath);
-	void LoadAlgos(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
+	void GetSOFiles(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
 	void ReloadAlgorithms();
 	void ReloadSimulations(House *oHouse);
+	int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
 
 	vector<OneSimulation*> m_vSimulations;
 	vector<House*> m_vOriginalHouses;
 	vector<AbstractAlgorithm*> m_vAlgos;
 
 	map<string, int> m_config;
+	vector<string> m_vAlgoFileNames;
+	vector<void*> m_vAlgoLibHandles;
 };
 
 struct InnerException : public exception

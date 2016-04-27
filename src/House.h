@@ -19,6 +19,8 @@ using namespace std;
 #define VACUUM_CELL 'R'
 #define EMPTY_CELL ' '
 
+const string HOUSES_FILE_SUFFIX = ".house";
+
 class House
 {
 public:
@@ -38,7 +40,6 @@ public:
 	int GetDirtCollected() 				const { return m_nDirtCollected; }
 	int GetBatteryLevel() 				const { return m_BatteryLevel; };
 	const string& GetHouseName()		const { return m_sHouseName; };
-	const string& GetHouseDesc()		const { return m_sHouseDesc; };
 	const string& GetHouseFileName()		const { return m_sHouseFileName; };
     int GetMaxSteps() 				const { return m_nMaxSteps; };
     bool isLoadFailed() 				const { return m_bisLoadFail; };
@@ -47,12 +48,11 @@ public:
 private:
 
 	string m_sHouseName;
-	string m_sHouseDesc;
 	string m_sHouseFileName;
 	Point m_VacumPos;
 	int m_nRowNumber;
 	int m_nColNumber;
-	char **m_pMap;
+	char **m_pMap = nullptr;
 	bool m_bisLoadFail;
 
 	//House max Steps
