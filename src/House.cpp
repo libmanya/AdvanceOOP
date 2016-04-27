@@ -93,13 +93,17 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 			}
 		}
 
+	size_t start = sPath.find_last_of('/') + 1;
+	size_t end = sPath.size();
+	string fileName = sPath.substr(start, end - start);
+		
 	if (nDockingCount == 0) {
-		string strError = sPath + " Missing Docking Station";
+		string strError = fileName + " Missing Docking Station";
         Logger::addLogMSG(strError);
         m_bisLoadFail = true;
 	}
 	else if (nDockingCount > 1) {
-		string strError = sPath + " too many Docking Stations";
+		string strError = fileName + " too many Docking Stations";
         Logger::addLogMSG(strError);
         m_bisLoadFail = true;
 	}
