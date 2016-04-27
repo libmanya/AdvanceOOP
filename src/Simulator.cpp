@@ -237,6 +237,11 @@ void Simulator::LoadHouses(const string &sHousesPath)
     vector<string> vDirHousesFiles;
     GetFilesListWithSuffix(sHousesPath, "house", vDirHousesFiles);
 
+    if (vDirHousesFiles.size() == 0){
+        string strError = "Usage: simulator [-config <config_file_location >] [-house_path <houses_path_location>] [algorithm_path <algorithm path>]";
+        throw InnerException(strError);
+    }
+
 	// load houses
 	for(string &sHouse : vDirHousesFiles){
         string name = sHouse;
@@ -244,8 +249,8 @@ void Simulator::LoadHouses(const string &sHousesPath)
         name = name.substr(start, name.length());
         size_t endPoint = name.find_last_of('.');
         name = name.substr(0, endPoint);
-        House tempHouse = new House(name, sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]);
-        if (tempHouse.isLoadFailed()){
+        House* tempHouse = new House(name, sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]);
+        if (tempHouse->isLoadFailed()){
             delete tempHouse;
         }
         else{
@@ -253,8 +258,8 @@ void Simulator::LoadHouses(const string &sHousesPath)
         }
     }
 
-    if (this.m_vOriginalHouses.size() == 0){
-        string strError = std::string("all house files in target") + sHousesPath + std::string(" parameter(s) : ") + strMissingParams;
+    if (m_vOriginalHouses.size() == 0){
+        string strError = std::string("all house files in target") + sHousesPath + std::string("cannot be opened or are invalid:");
         throw InnerException(strError);
     }
 }
