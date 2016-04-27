@@ -43,6 +43,13 @@ House::House(const string &sFileName,const string &sPath, int nBatteryCapacity, 
 
 	std::getline(fin, sTemp);
 	m_nMaxSteps = atoi(sTemp.c_str());
+	
+	if(m_nMaxSteps < 1){
+        string strError = fileName + " line number 2 in house file shall be a positive number, found: " + std::to_string(m_nMaxSteps);
+        Logger::addLogMSG(strError);
+        m_bisLoadFail = true;
+	}
+
 
 	std::getline(fin, sTemp);
 	m_nRowNumber = atoi(sTemp.c_str());
