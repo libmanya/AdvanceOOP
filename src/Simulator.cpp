@@ -160,7 +160,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
     if (stat(sConfigFilePath.c_str(), &buf) == -1){
         string strError = "config.ini doesn't exists in '" + sConfigFilePath + "'";
-        throw  strError.c_str();
+        throw  InnerException(strError);
     }
 
     ifstream fin(sConfigFilePath);
@@ -168,7 +168,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 	if (!fin)
 	{
 		string strError = "config.ini exists in ' " + sConfigFilePath + "' but cannot be opened";
-		throw  strError.c_str();
+		throw  InnerException(strError);
 	}
 
 	while (getline(fin, line))
@@ -227,7 +227,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 	if(nMissingCount != 0)
 	{
         string strError = std::string("config.ini missing ") + std::to_string(nMissingCount) + std::string(" parameter(s) : ") + strMissingParams;
-        throw strError.c_str();
+        throw InnerException(strError);
 	}
 }
 
