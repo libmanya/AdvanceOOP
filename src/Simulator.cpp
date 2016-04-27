@@ -6,7 +6,6 @@
  */
 
 #include "Simulator.h"
-#include "NaiveAlgo.h"
 #include <algorithm>
 #include <sstream>
 #include <dirent.h>
@@ -17,7 +16,6 @@
 #include <sys/stat.h>
 #include <sys/stat.h>
 #include "Algorithms/ExternalAlgo.h"
-#include "TwoDDynamicArray.h"
 #include <iomanip>
 
 using namespace std;
@@ -106,6 +104,7 @@ int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 		pDlib = dlopen(sAlgoPath.c_str(), RTLD_NOW);
 		if (pDlib == nullptr)
 		{
+			cout << dlerror() << endl;
             string strError = getFileNameFromPath(sAlgoPath, true) + ": file cannot be loaded or is not a valid .so";
 			Logger::addLogMSG(strError);
 			nErrorCount++;

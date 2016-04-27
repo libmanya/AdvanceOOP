@@ -12,10 +12,9 @@
 #include "../AbstractAlgorithm.h"
 #include <cstdlib>
 #include <ctime>
-#include "../TwoDDynamicArray.h"
-#include "../House.h"
-#include "../BFS.h"
-#include "../Utils.h"
+#include "TwoDDynamicArray.h"
+#include "BFS.h"
+#include "Utils.h"
 #include "ExternalAlgo.h"
 
 class _323500942_B : public AbstractAlgorithm

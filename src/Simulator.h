@@ -14,7 +14,7 @@
 #include "Sensor.h"
 #include <map>
 #include "Logger.h"
-#include "Utils.h"
+#include "Common.h"
 #include <exception>
 
 #if defined(WIN32) || defined(_WIN32)
