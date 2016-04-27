@@ -357,83 +357,21 @@ void Simulator::Run()
 			nSimulationSteps++;
 		}
 
-        //string currHouse = "";
-
 		// calculate and print score
 		for(OneSimulation *oSim : m_vSimulations)
 		{
 			int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
 
 			oScores[oSim->getAlgoFileName()][pHouse->GetHouseFileName()] = nScore;
-			//houseScore[oSim->getAlgoFileName()] = nScore;
-            //currHouse = oSim->getHouseFileName();
 		}
-
-        //if(currHouse != ""){
-        //	oScores[currHouse] = houseScore;
-        //}
 	}
 
-	//map<string, vector<int>> algosScores;
 
 	int nameWidth = 13;
 	int scoreWidth = 10;
 	const char seperator = '|';
 	const char space = ' ';
 	const char lineSep = '-';
-
-/*	if(oScores.size() > 0){
-        int n = nameWidth + (oScores.size() + 1) * scoreWidth + 2 ;
-        cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
-        cout << setw(nameWidth) << setfill(space) << seperator;
-	}
-
-	//parse Scores
-    map<string, map<string, int>>::const_iterator it;
-    for(it = oScores.begin(); it != oScores.end(); it++){
-        map<string, int> mapCurr = it->second;
-        map<string, int>::const_iterator i;
-        cout << left << setw(scoreWidth) << setfill(space) << it-> first << seperator;
-        for(i = mapCurr.begin(); i != mapCurr.end(); i++){
-            if(!algosScores.count(i->first)){
-                string name = it->first;
-                vector<int> houses;
-                houses.push_back(i->second);
-                algosScores[i->first] = houses;
-            }
-            else{
-                vector<int> houses = algosScores[i->first];
-                houses.push_back(i->second);
-                algosScores[i->first] = houses;
-            }
-        }
-    }
-
-    if(oScores.size() > 0){
-        cout << left << setw(scoreWidth) << setfill(space) << "AVG" << seperator << endl;
-        int n = nameWidth + (oScores.size() + 1) * scoreWidth + 2 ;
-        cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
-    }
-
-    //print Scores
-    for(auto iter1 = algosScores.begin(); iter1 != algosScores.end(); iter1++){
-        cout << left << setw(nameWidth) << setfill(space) << iter1->first << seperator;
-        vector<int> mapCurr = iter1->second;
-        vector<int>::const_iterator iter2;
-        int count = 0;
-        int sum = 0;
-        for(iter2 = mapCurr.begin(); iter2 != mapCurr.end(); iter2++){
-            cout << left << setw(scoreWidth) << setfill(space) << *iter2 << seperator;
-            count++;
-            sum += *iter2;
-        }
-
-        double avg = sum / count;
-        cout << setw(scoreWidth) << setfill(space) << setprecision(3) << avg << seperator<< endl;
-        int n = nameWidth + (oScores.size() + 1) * scoreWidth + 2 ;
-        cout << setw(n) << setfill(lineSep)<<  lineSep << endl;
-    }*/
-
 
 	// print scores table
     int nLineN = nameWidth + 2 + (m_vOriginalHouses.size() + 1) * (scoreWidth + 1);
