@@ -31,29 +31,17 @@ ostream& operator<<(ostream &out, Direction dir)
 
 int DirToInt(Direction oDir)
 {
-	switch (oDir)
-	{
-	case Direction::North:
-		return 0;
-	case Direction::East:
-		return 1;
-	case Direction::South:
-		return 2;
-	case Direction::West:
-		return 3;
-	default:
-		throw "Stay Direction is not traslatable to int";
-	}
+	return ((int) oDir);
 }
 
 Direction intToDir(int nDir)
 {
 	switch (nDir)
 	{
-	case 0: return Direction::North;
-	case 1: return Direction::East;
-	case 2: return Direction::South;
-	case 3: return Direction::West;
+	case 0: 
+	case 1: 
+	case 2: 
+	case 3: return ((Direction) nDir);
 	default: throw "Illigal direction";
 	}
 }
