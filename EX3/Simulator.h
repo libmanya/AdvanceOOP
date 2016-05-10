@@ -26,10 +26,14 @@
 const string CONFIG_PATH_FLAG = "-config";
 const string HOUSE_PATH_FLAG = "-house_path";
 const string ALGO_PATH_FLAG = "-algorithm_path";
+const string SCORE_PATH_FLAG = "-score_formula";
+const string THREAD_NUM_FLAG = "-threads";
 const string CONFIG_FILE_NAME = "config.ini";
 const string ALGO_FILE_SUFFIX = ".so";
+const string SCORE_FILE_NAME = "score_formula.so";
 
-const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>]";
+
+const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score .so path>] [-threads <nu, threads>]";
 
 using namespace std;
 
@@ -40,7 +44,7 @@ class Simulator
 
 public:
 	//Simulator Ctor with (config file Path)
-	Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath);
+	Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads);
 	~Simulator();
 	void Run();
 
@@ -97,6 +101,7 @@ private:
 	void GetSOFiles(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
 	void ReloadAlgorithms();
 	void ReloadSimulations(House *oHouse);
+	void LoadScoreFile(const string &sCScoreilePath);
 	int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
 
 	vector<OneSimulation*> m_vSimulations;
@@ -106,6 +111,7 @@ private:
 	map<string, int> m_config;
 	vector<string> m_vAlgoFileNames;
 	vector<void*> m_vAlgoLibHandles;
+	int m_nNumOfThreads = 1;
 };
 
 struct InnerException : public exception

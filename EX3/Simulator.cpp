@@ -168,7 +168,7 @@ int Simulator::LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 	return 0;
 }
 
-Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath)
+Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads)
 {
 
     vector<string> vDirAlgosFiles;
@@ -176,11 +176,19 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
 	//Read Configuration File to members
 	ReadConfig(sConfigFilePath);
 
+	//Get Score Function
+	LoadScoreFile(scorePath);
+
 	GetSOFiles(vDirAlgosFiles, sAlgosPath);
 	LoadAlgoFilesToFactory(vDirAlgosFiles);
 
 	// Load houses
 	LoadHouses(sHousesPath);
+
+    //check valid number of thread - initialize to 1
+    if(numOfThreads > 1){
+        m_nNumOfThreads = numOfThreads;
+    }
 }
 
 // Reads configuration file and sets m_config keys
@@ -256,6 +264,35 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
         string strError = std::string("config.ini missing ") + std::to_string(nMissingCount) + std::string(" parameter(s): ") + strMissingParams;
         throw InnerException(strError);
 	}
+}
+
+void Simulator::LoadScoreFile(const string &sScoreFilePath)
+{
+    if(sScoreFilePath.length() == 0){
+        // USe Defalut
+        //TO DO Point TO local funcation
+    }
+    else{
+        string sScorePath = sScoreFilePath + SCORE_FILE_NAME;
+
+        //load so score function
+        struct stat buf;
+
+        if (stat(sScorePath.c_str(), &buf) == -1)
+        throw  InnerException("cannot find " + SCORE_FILE_NAME + " file in '" + GetFullPath(sScoreFilePath) +"'");
+
+		void *pDlib = dlopen(sScoreFilePath.c_str(), RTLD_NOW);
+		if (pDlib == nullptr)
+		{
+            string strError = SCORE_FILE_NAME + "exists in " + (sScoreFilePath) +" but cannot be opened or is not a valid .so";
+			Logger::addLogMSG(strError, Logger::LogType::Algos);
+			//TO DO FIX LOG MEESAGE
+		}
+		else{
+
+		//TO DO Point TO global funcation
+		}
+    }
 }
 
 // Initializes houses
@@ -565,6 +602,8 @@ int main(int argsc, char **argv)
 	string sConfigPath = "";
 	string sHousesPath = "";
 	string sAlgosPath = "";
+	string sScorePath = "";
+	int    nThreads = 1;
 
 	// Gets Command line parameters
 	for (i = 1; i < argsc; i++)
@@ -584,6 +623,16 @@ int main(int argsc, char **argv)
 			if (i < (argsc - 1))
 				sAlgosPath = argv[++i];
 		}
+        else if (SCORE_PATH_FLAG.compare(argv[i]) == 0)
+		{
+			if (i < (argsc - 1))
+				sScorePath = argv[++i];
+		}
+        else if (THREAD_NUM_FLAG.compare(argv[i]) == 0)
+		{
+			if (i < (argsc - 1))
+				nThreads = atoi(argv[++i]);
+		}
 		else
 		{
 			cout << USAGE << endl;
@@ -592,6 +641,7 @@ int main(int argsc, char **argv)
 	}
 
 	sConfigPath = sConfigPath.length() == 0 ? "." : sConfigPath;
+
 	// Add config Path dir sign id needed
 	if (sConfigPath[sConfigPath.length() - 1] != PATH_SEPARATOR)
 		sConfigPath += PATH_SEPARATOR;
@@ -600,18 +650,25 @@ int main(int argsc, char **argv)
 	sConfigPath += CONFIG_FILE_NAME;
 
 	sHousesPath = sHousesPath.length() == 0 ? "." : sHousesPath;
+
 	// Add Houses Path dir sign id needed
 	if (sHousesPath[sHousesPath.length() - 1] != PATH_SEPARATOR)
 		sHousesPath += PATH_SEPARATOR;
 
 	sAlgosPath = sAlgosPath.length() == 0 ? "." : sAlgosPath;
+
 	// Add Algos Path dir sign id needed
 	if (sAlgosPath[sAlgosPath.length() - 1] != PATH_SEPARATOR)
 		sAlgosPath += PATH_SEPARATOR;
 
+
+	// Add score Path dir sign id needed
+	if ((sScorePath.length() != 0) && (sScorePath[sScorePath.length() - 1] != PATH_SEPARATOR))
+		sScorePath += PATH_SEPARATOR;
+
 	try
 	{
-		Simulator sim(sConfigPath, sHousesPath, sAlgosPath);
+		Simulator sim(sConfigPath, sHousesPath, sAlgosPath, sScorePath, nThreads);
 		sim.Run();
 
 		// if we reached this point that means Simulator didn't throw an exception
