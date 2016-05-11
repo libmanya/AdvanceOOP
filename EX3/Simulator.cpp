@@ -377,13 +377,9 @@ void Simulator::ReloadAlgorithms()
     }
 }
 
-// Runs the simulation
-void Simulator::Run()
+void Simulator::RunOnHouseThread(House* pHouse)
 {
-    map<string, map<string, int>> oScores;
-    // For every house ran all simulations in parallel
-    for(House *pHouse : m_vOriginalHouses)
-    {
+        // TODO - CHANGE LOAD TO LOCAL VAR
         ReloadAlgorithms();
         ReloadSimulations(pHouse);
 
@@ -396,7 +392,7 @@ void Simulator::Run()
         OneSimulation* lastFinnished = nullptr;
         int nFinishedCount = 0;
 
-        // Run until some algorithms didn't finish and simulation maximum steps count was not reached
+                // Run until some algorithms didn't finish and simulation maximum steps count was not reached
         while(bSomeActive
                 && nSimulationSteps < nMaxSimulationSteps
                 && (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config[MAX_STEPS_AFTER_KEY]))
@@ -458,12 +454,25 @@ void Simulator::Run()
 
             int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
 
-            //TODO LOCK SCORE TABLE
             m_mScoreLock.lock();
             oScores[oSim->getAlgoFileName()][pHouse->GetHouseFileName()] = nScore;
             m_mScoreLock.unlock();
-            //TODO UNLOCK SCORE TABLE
+
         }
+}
+
+// Runs the simulation
+void Simulator::Run()
+{
+    //TODO  MANAGE THREADS
+
+
+    // For every house ran all simulations in parallel
+    for(House *pHouse : m_vOriginalHouses)
+    {
+
+        // create new Thread with phouse and function
+        RunOnHouseThread(pHouse);
     }
 
     //TODO - JOIN ALL THREADS
@@ -533,7 +542,7 @@ Simulator::~Simulator()
 void Simulator::OneSimulation::MakeStep()
 {
     //TODO - CHANGE PARAM TO STEP
-    Direction oDir = m_pAlgo->step(Direction::Stay);
+    Direction oDir = m_pAlgo->step();
 
     const int i = m_oHouse.GetVacuumPos().i;
     const int j = m_oHouse.GetVacuumPos().j;

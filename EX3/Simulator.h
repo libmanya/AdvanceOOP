@@ -125,6 +125,7 @@ private:
     void ReloadSimulations(House *oHouse);
     void LoadScoreFile(const string &sCScoreilePath);
     int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
+    void RunOnHouseThread(House* pHouse);
 
     vector<OneSimulation*> m_vSimulations;
     vector<House*> m_vOriginalHouses;
@@ -135,6 +136,7 @@ private:
     vector<void*> m_vAlgoLibHandles;
     int m_nNumOfThreads = 1;
     mutex m_mScoreLock;
+    map<string, map<string, int>> oScores;
 };
 
 struct InnerException : public exception
