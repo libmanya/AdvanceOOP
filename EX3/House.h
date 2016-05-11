@@ -25,50 +25,83 @@ class House
 {
 public:
 
-	House(const string &sFileName,const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate);
-	House(const House &oFrom);
-	House& operator=(const House &oFrom);
-	friend ostream& operator<<(ostream& out, const House& oHouse);
-	void TryMoveVacuum(Direction oDir);
+    House(const string &sFileName,const string &sPath, int nBatteryCapacity, int nBatteryConsumptionRate, int nBatteryRechargeRate);
+    House(const House &oFrom);
+    House& operator=(const House &oFrom);
+    friend ostream& operator<<(ostream& out, const House& oHouse);
+    void TryMoveVacuum(Direction oDir);
 
-	// Getters
-	const Point& GetVacuumPos() 		const { return m_VacumPos; };
-	int GetColNumber() 					const { return m_nColNumber; };
-	int GetRowNumber() 					const { return m_nRowNumber; };
-	const char* operator[](int i)		const { return m_pMap[i]; };   // for House[][] support (read only access to sells)
-	int GetInitialAmounthOfDirt() 		const { return m_nInitialAmounthOfDirt; };
-	int GetDirtCollected() 				const { return m_nDirtCollected; }
-	int GetBatteryLevel() 				const { return m_BatteryLevel; };
-	const string& GetHouseName()		const { return m_sHouseName; };
-	const string& GetHouseFileName()		const { return m_sHouseFileName; };
-    int GetMaxSteps() 				const { return m_nMaxSteps; };
-    bool isLoadFailed() 				const { return m_bisLoadFail; };
-	~House();
+    // Getters
+    const Point& GetVacuumPos() 		const
+    {
+        return m_VacumPos;
+    };
+    int GetColNumber() 					const
+    {
+        return m_nColNumber;
+    };
+    int GetRowNumber() 					const
+    {
+        return m_nRowNumber;
+    };
+    const char* operator[](int i)		const
+    {
+        return m_pMap[i];
+    };   // for House[][] support (read only access to sells)
+    int GetInitialAmounthOfDirt() 		const
+    {
+        return m_nInitialAmounthOfDirt;
+    };
+    int GetDirtCollected() 				const
+    {
+        return m_nDirtCollected;
+    }
+    int GetBatteryLevel() 				const
+    {
+        return m_BatteryLevel;
+    };
+    const string& GetHouseName()		const
+    {
+        return m_sHouseName;
+    };
+    const string& GetHouseFileName()		const
+    {
+        return m_sHouseFileName;
+    };
+    int GetMaxSteps() 				const
+    {
+        return m_nMaxSteps;
+    };
+    bool isLoadFailed() 				const
+    {
+        return m_bisLoadFail;
+    };
+    ~House();
 
 private:
 
-	string m_sHouseName;
-	string m_sHouseFileName;
-	Point m_VacumPos;
-	int m_nRowNumber = 0;
-	int m_nColNumber;
-	char **m_pMap = nullptr;
-	bool m_bisLoadFail;
+    string m_sHouseName;
+    string m_sHouseFileName;
+    Point m_VacumPos;
+    int m_nRowNumber = 0;
+    int m_nColNumber;
+    char **m_pMap = nullptr;
+    bool m_bisLoadFail;
 
-	//House max Steps
-	int m_nMaxSteps;
+    //House max Steps
+    int m_nMaxSteps;
 
-	// Dirt
-	int m_nInitialAmounthOfDirt;
-	int m_nDirtCollected = 0;
+    // Dirt
+    int m_nInitialAmounthOfDirt;
+    int m_nDirtCollected = 0;
 
-	// Battery
-	int m_BatteryLevel;
-	int m_BatteryCapacity;
-	int m_BatteryConsumptionRate;
-	int m_BatteryRechargeRate;
+    // Battery
+    int m_BatteryLevel;
+    int m_BatteryCapacity;
+    int m_BatteryConsumptionRate;
+    int m_BatteryRechargeRate;
 
-	void TryCollectDirt();
+    void TryCollectDirt();
 };
 
 #endif /* HOUSE_H_ */

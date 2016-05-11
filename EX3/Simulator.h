@@ -16,6 +16,7 @@
 #include "Logger.h"
 #include "Common.h"
 #include <exception>
+#include <mutex>
 
 #if defined(WIN32) || defined(_WIN32)
 #define PATH_SEPARATOR '\\'
@@ -43,87 +44,109 @@ class Simulator
 {
 
 public:
-	//Simulator Ctor with (config file Path)
-	Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads);
-	~Simulator();
-	void Run();
+    //Simulator Ctor with (config file Path)
+    Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads);
+    ~Simulator();
+    void Run();
 
-	class OneSimulation
-	{
+    class OneSimulation
+    {
 
-	public:
-		enum SimulationStateType{ Finished, OutOfBattery, AlgoMadeIllegalMove, Running };
+    public:
+        enum SimulationStateType { Finished, OutOfBattery, AlgoMadeIllegalMove, Running };
 
-		OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo, map<string, int> &oConfig, const string &sAlgoName): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
-		{
-			m_pAlgo->setConfiguration(m_config);
-			m_pAlgo->setSensor(m_oSensor);
+        OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo, map<string, int> &oConfig, const string &sAlgoName): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
+        {
+            m_pAlgo->setConfiguration(m_config);
+            m_pAlgo->setSensor(m_oSensor);
 
-			SimulationState = Running;
-			m_sAlgoFileName = sAlgoName;
-		};
-		void MakeStep();
-		int getSteps()							const	{ return m_nSteps; };
-		const House& getHouse()					const	{ return m_oHouse; };
-		void AnnounceAboutToFinish()
-		{
-			if(!m_bAnnouncedAboutToFinish)
-			{
-				m_pAlgo->aboutToFinish(m_config["MaxStepsAfterWinner"]);
-				m_bAnnouncedAboutToFinish = true;
-			}
-		};
-		int GetActualPositionInCompetition()	const	{ return m_nActualPositionInCompetition; }
-		SimulationStateType GetSimulationState()const	{ return SimulationState; }
-		int CalculateScore(int nWinnerSteps,	bool bIsWinner, int nSimulationSteps)
-												const;
-		void SetActualPositionInCompetition(int nPos)	{ m_nActualPositionInCompetition = nPos;  }
-		string getHouseFileName()	{ return m_oHouse.GetHouseFileName();}
-		string getAlgoFileName()	{ return m_sAlgoFileName;}
+            SimulationState = Running;
+            m_sAlgoFileName = sAlgoName;
+        };
+        void MakeStep();
+        int getSteps()							const
+        {
+            return m_nSteps;
+        };
+        const House& getHouse()					const
+        {
+            return m_oHouse;
+        };
+        void AnnounceAboutToFinish()
+        {
+            if(!m_bAnnouncedAboutToFinish)
+            {
+                m_pAlgo->aboutToFinish(m_config["MaxStepsAfterWinner"]);
+                m_bAnnouncedAboutToFinish = true;
+            }
+        };
+        int GetActualPositionInCompetition()	const
+        {
+            return m_nActualPositionInCompetition;
+        }
+        SimulationStateType GetSimulationState()const
+        {
+            return SimulationState;
+        }
+        int CalculateScore(int nWinnerSteps,	bool bIsWinner, int nSimulationSteps)
+        const;
+        void SetActualPositionInCompetition(int nPos)
+        {
+            m_nActualPositionInCompetition = nPos;
+        }
+        string getHouseFileName()
+        {
+            return m_oHouse.GetHouseFileName();
+        }
+        string getAlgoFileName()
+        {
+            return m_sAlgoFileName;
+        }
 
-	private:
+    private:
 
-		bool m_bAnnouncedAboutToFinish = false;
-		SimulationStateType SimulationState;
-		House m_oHouse;
-		Sensor m_oSensor;
-		AbstractAlgorithm* m_pAlgo;
-		map<string, int> &m_config;
-		int m_nSteps = 0;
-		int m_nActualPositionInCompetition = 0;
-		string m_sAlgoFileName;
-	};
+        bool m_bAnnouncedAboutToFinish = false;
+        SimulationStateType SimulationState;
+        House m_oHouse;
+        Sensor m_oSensor;
+        AbstractAlgorithm* m_pAlgo;
+        map<string, int> &m_config;
+        int m_nSteps = 0;
+        int m_nActualPositionInCompetition = 0;
+        string m_sAlgoFileName;
+    };
 
 private:
 
-	void ReadConfig(const string &sConfigFilePath);
-	void LoadHouses(const string &sHousesPath);
-	void GetSOFiles(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
-	void ReloadAlgorithms();
-	void ReloadSimulations(House *oHouse);
-	void LoadScoreFile(const string &sCScoreilePath);
-	int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
+    void ReadConfig(const string &sConfigFilePath);
+    void LoadHouses(const string &sHousesPath);
+    void GetSOFiles(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
+    void ReloadAlgorithms();
+    void ReloadSimulations(House *oHouse);
+    void LoadScoreFile(const string &sCScoreilePath);
+    int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
 
-	vector<OneSimulation*> m_vSimulations;
-	vector<House*> m_vOriginalHouses;
-	vector<AbstractAlgorithm*> m_vAlgos;
+    vector<OneSimulation*> m_vSimulations;
+    vector<House*> m_vOriginalHouses;
+    vector<AbstractAlgorithm*> m_vAlgos;
 
-	map<string, int> m_config;
-	vector<string> m_vAlgoFileNames;
-	vector<void*> m_vAlgoLibHandles;
-	int m_nNumOfThreads = 1;
+    map<string, int> m_config;
+    vector<string> m_vAlgoFileNames;
+    vector<void*> m_vAlgoLibHandles;
+    int m_nNumOfThreads = 1;
+    mutex m_mScoreLock;
 };
 
 struct InnerException : public exception
 {
-  const string m_sMsg;
+    const string m_sMsg;
 
-  InnerException(const string&  sMsg) : m_sMsg(sMsg) {};
+    InnerException(const string&  sMsg) : m_sMsg(sMsg) {};
 
-  InnerException() : m_sMsg("") {};
+    InnerException() : m_sMsg("") {};
 
-  const char * what () const noexcept (true) override
-  {
-    return m_sMsg.c_str();;
-  }
+    const char * what () const noexcept (true) override
+    {
+        return m_sMsg.c_str();;
+    }
 };

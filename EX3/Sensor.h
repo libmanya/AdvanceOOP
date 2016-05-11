@@ -14,11 +14,11 @@
 class Sensor : public AbstractSensor
 {
 public:
-	House& m_oHouse;
+    House& m_oHouse;
 
-	Sensor(House &oHouse):m_oHouse(oHouse){};
-	SensorInformation sense() const override;
-	~Sensor(){};
+    Sensor(House &oHouse):m_oHouse(oHouse) {};
+    SensorInformation sense() const override;
+    ~Sensor() {};
 };
 
 

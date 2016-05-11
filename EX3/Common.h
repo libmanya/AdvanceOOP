@@ -18,33 +18,33 @@ const std::string MAX_STEPS_AFTER_KEY = "MaxStepsAfterWinner";
 
 struct Point
 {
-	int i, j;
+    int i, j;
 
-	Point(){}
+    Point() {}
 
-	Point(int _i, int _j)
-	{
-		i = _i;
-		j = _j;
-	}
+    Point(int _i, int _j)
+    {
+        i = _i;
+        j = _j;
+    }
 
-	bool operator==(const Point& other) const
-	{
-		return (i == other.i && j == other.j);
-	}
+    bool operator==(const Point& other) const
+    {
+        return (i == other.i && j == other.j);
+    }
 
-	bool operator!=(const Point& other) const
-	{
-		return !(*this == other);
-	}
+    bool operator!=(const Point& other) const
+    {
+        return !(*this == other);
+    }
 
-	void getNeighbours(std::vector<Point> &vPoints) const
-	{
-		vPoints.emplace_back(i - 1, j);
-		vPoints.emplace_back(i, j + 1);
-		vPoints.emplace_back(i + 1, j);
-		vPoints.emplace_back(i, j - 1);
-	}
+    void getNeighbours(std::vector<Point> &vPoints) const
+    {
+        vPoints.emplace_back(i - 1, j);
+        vPoints.emplace_back(i, j + 1);
+        vPoints.emplace_back(i + 1, j);
+        vPoints.emplace_back(i, j - 1);
+    }
 };
 
 #endif /* POINT_H_ */

@@ -13,41 +13,45 @@
 
 using namespace std;
 
-class Logger {
+class Logger
+{
 
-	static vector<string> vHousesLog;
-	static vector<string> vAlgosLog;
+    static vector<string> vHousesLog;
+    static vector<string> vAlgosLog;
 
-  public:
+public:
 
-	enum class LogType { Houses, Algos };
+    enum class LogType
+    {
+        Houses, Algos
+    };
 
     static const vector<string>& getLog(LogType oType, bool bSort = false)
     {
-    	if(oType == LogType::Houses)
-    	{
-    		if(bSort)
-    			std::sort(vHousesLog.begin(), vHousesLog.end());
+        if(oType == LogType::Houses)
+        {
+            if(bSort)
+                std::sort(vHousesLog.begin(), vHousesLog.end());
 
-    		return vHousesLog;
-    	}
-    	else
-    	{
-    		if(bSort)
-    			std::sort(vAlgosLog.begin(), vAlgosLog.end());
+            return vHousesLog;
+        }
+        else
+        {
+            if(bSort)
+                std::sort(vAlgosLog.begin(), vAlgosLog.end());
 
-    		return vAlgosLog;
-    	}
-	}
+            return vAlgosLog;
+        }
+    }
 
     static void addLogMSG(const string &msg, LogType oType)
     {
-    	if(oType == LogType::Houses)
-    		vHousesLog.push_back(msg);
-    	else
-    		vAlgosLog.push_back(msg);
+        if(oType == LogType::Houses)
+            vHousesLog.push_back(msg);
+        else
+            vAlgosLog.push_back(msg);
 
-	}
+    }
 };
 
 #endif
