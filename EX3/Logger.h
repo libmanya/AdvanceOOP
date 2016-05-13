@@ -23,7 +23,7 @@ public:
 
     enum class LogType
     {
-        Houses, Algos
+        Houses, Algos, score
     };
 
     static const vector<string>& getLog(LogType oType, bool bSort = false)

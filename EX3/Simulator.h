@@ -16,6 +16,7 @@
 #include "Logger.h"
 #include "Common.h"
 #include <exception>
+#include "concurrentQueue.h"
 #include <mutex>
 
 #if defined(WIN32) || defined(_WIN32)
@@ -35,6 +36,7 @@ const string SCORE_FILE_NAME = "score_formula.so";
 
 
 const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score .so path>] [-threads <nu, threads>]";
+int calc_score(const map<string,int>& score_params);
 
 using namespace std;
 
@@ -123,9 +125,11 @@ private:
     void GetSOFiles(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
     void ReloadAlgorithms();
     void ReloadSimulations(House *oHouse);
+    void loadAlgorithms(vector<AbstractAlgorithm*>& Algos);
+    void loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<AbstractAlgorithm*>& Algos);
     void LoadScoreFile(const string &sCScoreilePath);
     int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
-    void RunOnHouseThread(House* pHouse);
+    void RunOnHouseThread();
 
     vector<OneSimulation*> m_vSimulations;
     vector<House*> m_vOriginalHouses;
@@ -137,6 +141,8 @@ private:
     int m_nNumOfThreads = 1;
     mutex m_mScoreLock;
     map<string, map<string, int>> oScores;
+    bool m_bIsDefaultScore = true;
+    Concurrent_Queue<House*> m_HouseQueue;
 };
 
 struct InnerException : public exception

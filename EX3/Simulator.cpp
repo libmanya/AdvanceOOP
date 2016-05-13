@@ -18,6 +18,11 @@
 #include <iomanip>
 #include <stdlib.h>
 
+
+#include <thread>
+
+#include <mutex>
+
 using namespace std;
 
 // our global factory for making Algos
@@ -272,12 +277,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
 void Simulator::LoadScoreFile(const string &sScoreFilePath)
 {
-    if(sScoreFilePath.length() == 0)
-    {
-        // USe Defalut
-        //TO DO Point TO local funcation
-    }
-    else
+    if(sScoreFilePath.length() != 0)
     {
         string sScorePath = sScoreFilePath + SCORE_FILE_NAME;
 
@@ -291,7 +291,7 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
         if (pDlib == nullptr)
         {
             string strError = SCORE_FILE_NAME + "exists in " + (sScoreFilePath) +" but cannot be opened or is not a valid .so";
-            Logger::addLogMSG(strError, Logger::LogType::Algos);
+            Logger::addLogMSG(strError, Logger::LogType::score);
             //TO DO FIX LOG MEESAGE
         }
         else
@@ -299,6 +299,7 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
 
             //TO DO Point TO global funcation
             // int calc_score(const map<string, int>& score_params);
+            m_bIsDefaultScore = false;
         }
     }
 }
@@ -377,102 +378,149 @@ void Simulator::ReloadAlgorithms()
     }
 }
 
-void Simulator::RunOnHouseThread(House* pHouse)
+void Simulator::loadAlgorithms(vector<AbstractAlgorithm*>& Algos)
 {
-        // TODO - CHANGE LOAD TO LOCAL VAR
-        ReloadAlgorithms();
-        ReloadSimulations(pHouse);
+    for(auto itr = factory.begin(); itr != factory.end(); itr++)
+    {
+        Algos.push_back((itr->second)());
+    }
+}
 
-        bool bSomeActive = true;
-        bool bIsWinner = false;
-        bool bAnnounceWinner = false;
-        int nSimulationSteps = 0;
-        int nMaxSimulationSteps = pHouse->GetMaxSteps(); // Get From House
-        int nWinnerSteps = 0;
-        OneSimulation* lastFinnished = nullptr;
-        int nFinishedCount = 0;
+void Simulator::loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<AbstractAlgorithm*>& Algos)
+{
+    int i = 0;
+    for(AbstractAlgorithm *pAlgo : Algos)
+    {
+        simulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config, m_vAlgoFileNames[i]));
+        i++;
+    }
+}
 
-                // Run until some algorithms didn't finish and simulation maximum steps count was not reached
-        while(bSomeActive
-                && nSimulationSteps < nMaxSimulationSteps
-                && (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config[MAX_STEPS_AFTER_KEY]))
+void Simulator::RunOnHouseThread()
+{
+    while (!m_HouseQueue.isEmpty())
+    {
+        House* pHouse = m_HouseQueue.pop();
+
+        if(pHouse != nullptr)
         {
-            bSomeActive = false;
-            for(OneSimulation *oSim : m_vSimulations)
+            vector<OneSimulation*> simulations;
+            vector<AbstractAlgorithm*> Algos;
+
+            // TODO - CHANGE LOAD TO LOCAL VAR
+            loadAlgorithms(Algos);
+            loadSimulations(pHouse, simulations, Algos);
+
+            bool bSomeActive = true;
+            bool bIsWinner = false;
+            bool bAnnounceWinner = false;
+            int nSimulationSteps = 0;
+            int nMaxSimulationSteps = pHouse->GetMaxSteps(); // Get From House
+            int nWinnerSteps = 0;
+            OneSimulation* lastFinnished = nullptr;
+            int nFinishedCount = 0;
+
+                    // Run until some algorithms didn't finish and simulation maximum steps count was not reached
+            while(bSomeActive
+                    && nSimulationSteps < nMaxSimulationSteps
+                    && (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config[MAX_STEPS_AFTER_KEY]))
             {
-
-                if(oSim->GetSimulationState() == OneSimulation::Running)
+                bSomeActive = false;
+                for(OneSimulation *oSim : simulations)
                 {
-                    bSomeActive = true;
 
-                    // When there is a winner or steps == MaxSteps - MaxStepsAfterWinner algorithm should receive AboutToFinish announcement
-                    if(bAnnounceWinner || (nSimulationSteps == (nMaxSimulationSteps - m_config[MAX_STEPS_AFTER_KEY])))
+                    if(oSim->GetSimulationState() == OneSimulation::Running)
                     {
-                        oSim->AnnounceAboutToFinish();
-                    }
+                        bSomeActive = true;
 
-                    // Make a single simulation step
-                    oSim->MakeStep();
-
-                    if(oSim->GetSimulationState() == OneSimulation::Finished)
-                    {
-                        // calculate Actual Position In Competition according to forum post by Amir
-                        if (lastFinnished != nullptr) // someone already won
+                        // When there is a winner or steps == MaxSteps - MaxStepsAfterWinner algorithm should receive AboutToFinish announcement
+                        if(bAnnounceWinner || (nSimulationSteps == (nMaxSimulationSteps - m_config[MAX_STEPS_AFTER_KEY])))
                         {
-                            if (lastFinnished->getSteps() == oSim->getSteps()) // someone finished on the same step
-                                oSim->SetActualPositionInCompetition(lastFinnished->GetActualPositionInCompetition());  // set the same ActualPositionInCompetition
-                            else
-                                oSim->SetActualPositionInCompetition(nFinishedCount + 1);
-                        }
-                        else // first to finish
-                        {
-                            oSim->SetActualPositionInCompetition(1);
+                            oSim->AnnounceAboutToFinish();
                         }
 
-                        lastFinnished = oSim;
+                        // Make a single simulation step
+                        oSim->MakeStep();
 
-                        // if there was no winner until now: save winner steps and remember to announce winner at the beginning of the next round
-                        if(!bIsWinner)
+                        if(oSim->GetSimulationState() == OneSimulation::Finished)
                         {
-                            bIsWinner = true;
-                            nWinnerSteps = oSim->getSteps();
-                            bAnnounceWinner = true; 		// remember to announce winner at the beginning of the next round
-                        }
+                            // calculate Actual Position In Competition according to forum post by Amir
+                            if (lastFinnished != nullptr) // someone already won
+                            {
+                                if (lastFinnished->getSteps() == oSim->getSteps()) // someone finished on the same step
+                                    oSim->SetActualPositionInCompetition(lastFinnished->GetActualPositionInCompetition());  // set the same ActualPositionInCompetition
+                                else
+                                    oSim->SetActualPositionInCompetition(nFinishedCount + 1);
+                            }
+                            else // first to finish
+                            {
+                                oSim->SetActualPositionInCompetition(1);
+                            }
 
-                        nFinishedCount++;
+                            lastFinnished = oSim;
+
+                            // if there was no winner until now: save winner steps and remember to announce winner at the beginning of the next round
+                            if(!bIsWinner)
+                            {
+                                bIsWinner = true;
+                                nWinnerSteps = oSim->getSteps();
+                                bAnnounceWinner = true; 		// remember to announce winner at the beginning of the next round
+                            }
+
+                            nFinishedCount++;
+                        }
                     }
                 }
+
+                nSimulationSteps++;
             }
 
-            nSimulationSteps++;
+            int nScore;
+
+            // calculate and print score
+            for(OneSimulation *oSim : simulations)
+            {
+                if(m_bIsDefaultScore)
+                {
+                    nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
+                }
+                else
+                {
+                    //nScore = calc_score();
+                    if(nScore == -1)
+                    {
+                        string strError = "Score formula could not calculate some scores, see -1 in the results table";
+                        Logger::addLogMSG(strError, Logger::LogType::score);
+
+                    }
+                }
+
+                m_mScoreLock.lock();
+                oScores[oSim->getAlgoFileName()][pHouse->GetHouseFileName()] = nScore;
+                m_mScoreLock.unlock();
+
+            }
         }
-
-        // calculate and print score
-        for(OneSimulation *oSim : m_vSimulations)
-        {
-
-
-            int nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
-
-            m_mScoreLock.lock();
-            oScores[oSim->getAlgoFileName()][pHouse->GetHouseFileName()] = nScore;
-            m_mScoreLock.unlock();
-
-        }
+    }
 }
 
 // Runs the simulation
 void Simulator::Run()
 {
-    //TODO  MANAGE THREADS
-
-
-    // For every house ran all simulations in parallel
     for(House *pHouse : m_vOriginalHouses)
     {
+        m_HouseQueue.push(pHouse);
+    }
 
-        // create new Thread with phouse and function
-        RunOnHouseThread(pHouse);
+    vector<thread> threads;
+    for(int i = 0; i < m_nNumOfThreads; i++)
+    {
+        threads.push_back(thread(&Simulator::RunOnHouseThread,this));
+    }
+
+    // ===> join all the threads to finish nicely (i.e. without crashing / terminating threads)
+    for(auto& thread_ptr : threads) {
+        thread_ptr.join();
     }
 
     //TODO - JOIN ALL THREADS
