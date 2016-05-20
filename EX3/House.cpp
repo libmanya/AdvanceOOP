@@ -267,3 +267,8 @@ void House::TryMoveVacuum(Direction oDir)
     }
 }
 
+bool House::isVacuumInDocking()const
+{
+    return((m_pMap[m_VacumPos.i][m_VacumPos.j]) == DOCKING_STATION_CELL);
+}
+

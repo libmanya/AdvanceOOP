@@ -292,12 +292,21 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
         {
             string strError = SCORE_FILE_NAME + "exists in " + (sScoreFilePath) +" but cannot be opened or is not a valid .so";
             Logger::addLogMSG(strError, Logger::LogType::score);
-            //TO DO FIX LOG MEESAGE
         }
         else
         {
+            dlerror();
 
-            //TO DO Point TO global funcation
+            calc_score = (score_t) dlsym(pDlib, "calc_score");
+            const char *dlsym_error = dlerror();
+            if (dlsym_error) {
+                cerr << "Cannot load symbol 'hello': " << dlsym_error <<
+                    '\n';
+                dlclose(pDlib);
+                dlclose(pDlib);
+                dlclose(pDlib);
+            }
+
             // int calc_score(const map<string, int>& score_params);
             m_bIsDefaultScore = false;
         }
@@ -401,6 +410,8 @@ void Simulator::RunOnHouseThread()
     while (!m_HouseQueue.isEmpty())
     {
         House* pHouse = m_HouseQueue.pop();
+        std::thread::id this_id = std::this_thread::get_id();
+        cout << pHouse->GetHouseFileName() << "and in thread id" << this_id << endl;
 
         if(pHouse != nullptr)
         {
@@ -486,7 +497,20 @@ void Simulator::RunOnHouseThread()
                 }
                 else
                 {
-                    //nScore = calc_score();
+                    map<string, int> mScoreParams;
+
+                    //Add all paramters
+                    mScoreParams.insert(pair<string,int>("actual_position_in_competition", oSim->GetActualPositionInCompetition()));
+                    mScoreParams.insert(pair<string,int>("simulation_steps", nSimulationSteps));
+                    mScoreParams.insert(pair<string,int>("winner_num_steps", nWinnerSteps));
+                    mScoreParams.insert(pair<string,int>("this_num_steps", oSim->getSteps()));
+                    mScoreParams.insert(pair<string,int>("sum_dirt_in_house", oSim->getHouse().GetInitialAmounthOfDirt()));
+                    mScoreParams.insert(pair<string,int>("dirt_collected", oSim->getHouse().GetDirtCollected()));
+
+                    int nIsinDockling = (oSim->getHouse().isVacuumInDocking()) ? 1 : 0;
+                    mScoreParams.insert(pair<string,int>("is_back_in_docking", nIsinDockling));
+
+                    nScore = calc_score(mScoreParams);
                     if(nScore == -1)
                     {
                         string strError = "Score formula could not calculate some scores, see -1 in the results table";
@@ -518,12 +542,10 @@ void Simulator::Run()
         threads.push_back(thread(&Simulator::RunOnHouseThread,this));
     }
 
-    // ===> join all the threads to finish nicely (i.e. without crashing / terminating threads)
     for(auto& thread_ptr : threads) {
         thread_ptr.join();
     }
 
-    //TODO - JOIN ALL THREADS
 
     int nameWidth = 13;
     int scoreWidth = 10;

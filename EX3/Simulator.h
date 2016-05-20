@@ -36,7 +36,10 @@ const string SCORE_FILE_NAME = "score_formula.so";
 
 
 const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score .so path>] [-threads <nu, threads>]";
-int calc_score(const map<string,int>& score_params);
+
+typedef int (*score_t)(const map<string, int>&);
+score_t calc_score;
+ //int calc_score(const map<string, int>& score_params);
 
 using namespace std;
 

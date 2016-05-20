@@ -30,6 +30,7 @@ public:
     House& operator=(const House &oFrom);
     friend ostream& operator<<(ostream& out, const House& oHouse);
     void TryMoveVacuum(Direction oDir);
+    bool isVacuumInDocking()const;
 
     // Getters
     const Point& GetVacuumPos() 		const
