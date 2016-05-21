@@ -526,6 +526,15 @@ void Simulator::RunOnHouseThread()
                 m_mScoreLock.unlock();
 
             }
+
+        for(AbstractAlgorithm *pAlgo : Algos)
+            delete pAlgo;
+
+        for(OneSimulation *pSim : simulations)
+            delete pSim;
+
+        simulations.clear();
+        Algos.clear();
         }
     }
 }
