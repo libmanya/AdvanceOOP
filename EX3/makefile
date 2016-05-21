@@ -30,6 +30,12 @@ House.o: Direction.h House.h House.cpp Logger.h
 Utils.o: Direction.h ./Algorithms/Utils.h ./Algorithms/Utils.cpp
 		g++ -fPIC -std=c++11 -Wall -O2 -pedantic -pthread -c ./Algorithms/Utils.cpp
 
+score_formula: score_formula.cpp
+	g++ -fPIC -c -std=c++11 -o score_formula.o score_formula.cpp
+	g++ -shared -Wl,-soname,score_formula.so -o score_formula.so score_formula.o
+clean_score_formula:
+	-rm score_formula.o score_formula.so
+
 
 
 

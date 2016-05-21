@@ -285,9 +285,12 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
         struct stat buf;
 
         if (stat(sScorePath.c_str(), &buf) == -1)
+        {
+            cout << USAGE << endl;
             throw  InnerException("cannot find " + SCORE_FILE_NAME + " file in '" + GetFullPath(sScoreFilePath) +"'");
+        }
 
-        void *pDlib = dlopen(sScoreFilePath.c_str(), RTLD_NOW);
+        void *pDlib = dlopen(sScorePath.c_str(), RTLD_NOW);
         if (pDlib == nullptr)
         {
             string strError = SCORE_FILE_NAME + "exists in " + (sScoreFilePath) +" but cannot be opened or is not a valid .so";
@@ -300,14 +303,11 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
             calc_score = (score_t) dlsym(pDlib, "calc_score");
             const char *dlsym_error = dlerror();
             if (dlsym_error) {
-                cerr << "Cannot load symbol 'hello': " << dlsym_error <<
-                    '\n';
-                dlclose(pDlib);
-                dlclose(pDlib);
+                string strError = SCORE_FILE_NAME + "is a valid .so but it does not have a valid score formula";
+                Logger::addLogMSG(strError, Logger::LogType::score);
                 dlclose(pDlib);
             }
 
-            // int calc_score(const map<string, int>& score_params);
             m_bIsDefaultScore = false;
         }
     }
@@ -410,8 +410,6 @@ void Simulator::RunOnHouseThread()
     while (!m_HouseQueue.isEmpty())
     {
         House* pHouse = m_HouseQueue.pop();
-        std::thread::id this_id = std::this_thread::get_id();
-        cout << pHouse->GetHouseFileName() << "and in thread id" << this_id << endl;
 
         if(pHouse != nullptr)
         {
@@ -511,10 +509,13 @@ void Simulator::RunOnHouseThread()
                     mScoreParams.insert(pair<string,int>("is_back_in_docking", nIsinDockling));
 
                     nScore = calc_score(mScoreParams);
-                    if(nScore == -1)
+                    if(nScore == -1 && !m_bIsScoreError)
                     {
+                        m_mScoreErrorLock.lock();
                         string strError = "Score formula could not calculate some scores, see -1 in the results table";
                         Logger::addLogMSG(strError, Logger::LogType::score);
+                        m_bIsScoreError = true;
+                        m_mScoreErrorLock.unlock();
 
                     }
                 }

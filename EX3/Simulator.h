@@ -35,7 +35,7 @@ const string ALGO_FILE_SUFFIX = ".so";
 const string SCORE_FILE_NAME = "score_formula.so";
 
 
-const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score .so path>] [-threads <nu, threads>]";
+const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score_formula.so path>] [-threads <nu, threads>]";
 
 typedef int (*score_t)(const map<string, int>&);
 score_t calc_score;
@@ -146,6 +146,8 @@ private:
     map<string, map<string, int>> oScores;
     bool m_bIsDefaultScore = true;
     Concurrent_Queue<House*> m_HouseQueue;
+    bool m_bIsScoreError = false;
+    mutex m_mScoreErrorLock;
 };
 
 struct InnerException : public exception
