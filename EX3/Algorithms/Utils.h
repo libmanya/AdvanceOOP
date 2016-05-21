@@ -19,7 +19,8 @@ ostream& operator<<(ostream &out, Direction dir);
 Direction reverseDir(Direction dir);
 int DirToInt(Direction oDir);
 Direction intToDir(int nDir);
-
+Direction LeftOf(Direction oDir);
+Direction RightOf(Direction oDir);
 Direction direction(Point from, Point to);
 
 Point NeighbourTo(Point &point, Direction oDir);

@@ -133,6 +133,11 @@ public:
 		return out;
 	}
 
+	void clear()
+	{
+		m_oMap.clear();
+	}
+
 	~TwoDDynamicArray(){};
 };
 

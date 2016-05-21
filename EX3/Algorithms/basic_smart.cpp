@@ -1,15 +1,28 @@
 /*
- * _323500942_C.cpp
+ * basic_smart.cpp
  *
  *  Created on: 19 Mar 2016
  *      Author: iliyaaizin 323500942 & yaronlibman 302730072
  */
 
 #include <map>
-#include "_323500942_C.h"
+#include "basic_smart.h"
 
-Direction _323500942_C::step()
+Direction basic_smart::step(Direction prevStep)
 {
+	//cout << m_oMatrix << endl;
+
+	m_oPos.i += (prevStep == Direction::South ? 1 : (prevStep == Direction::North ? -1 : 0));
+	m_oPos.j += (prevStep == Direction::East ? 1 : (prevStep == Direction::West ? -1 : 0));
+
+	if(prevStep != m_oPrevStep)
+	{
+		// reenter AdvanceToClean state;
+		m_bIsPathToCleanInit = false;	// recalculate path
+		m_bIsPathToDInit = false;
+		m_oCurrentState = AlgoState::AdvanceToClean;
+	}
+
 	// get sensor information
 	SensorInformation oSI = m_pSensor->sense();
 
@@ -78,8 +91,7 @@ Direction _323500942_C::step()
 		break;
 	}
 
-	m_oPos.i += (oDir == Direction::South ? 1 : (oDir == Direction::North ? -1 : 0));
-	m_oPos.j += (oDir == Direction::East ? 1 : (oDir == Direction::West ? -1 : 0));
+	m_oPrevStep = oDir;
 
 	// update battery level (according to old position)
 	if (m_oMatrix[i][j] == 'D')
@@ -94,7 +106,7 @@ Direction _323500942_C::step()
 	return oDir;
 }
 
-Direction _323500942_C::HandleClean()
+Direction basic_smart::HandleClean()
 {
 	// run BFS to calculate distance to D
 	BFS::BFSResult result;
@@ -107,7 +119,7 @@ Direction _323500942_C::HandleClean()
 		return HandleAdvanceToD();
 	}
 
-	if (m_oMatrix[m_oPos] == ' ' || m_oMatrix[m_oPos] == '0')
+	if (!(m_oMatrix[m_oPos] >= '1' && m_oMatrix[m_oPos] <= '9'))
 	{
 		m_oCurrentState = AlgoState::AdvanceToClean;
 		return HandleAdvanceToClean();
@@ -116,7 +128,7 @@ Direction _323500942_C::HandleClean()
 	return Direction::Stay;
 }
 
-Direction _323500942_C::HandleAdvanceToClean()
+Direction basic_smart::HandleAdvanceToClean()
 {
 	// run BFS to calculate distance to D
 	BFS::BFSResult result;
@@ -126,6 +138,8 @@ Direction _323500942_C::HandleAdvanceToClean()
 		|| m_nBatteryLevel/m_oConfig[BATTERY_CONSUMPTION_KEY] <= result.getDistance() + 1		// number of steps the battery will hold is less then number of steps it will take to get back to D + 1
 		|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
 	{
+		m_bIsPathToCleanInit = false;
+
 		m_oCurrentState = AlgoState::AdvanceToD;
 		return HandleAdvanceToD();
 	}
@@ -154,7 +168,7 @@ Direction _323500942_C::HandleAdvanceToClean()
 	return Direction::Stay;
 }
 
-Direction _323500942_C::HandleAdvanceToD()
+Direction basic_smart::HandleAdvanceToD()
 {
 	if (!m_bIsPathToDInit)
 	{
@@ -178,7 +192,7 @@ Direction _323500942_C::HandleAdvanceToD()
 	}
 }
 
-Direction _323500942_C::HandleAtD()
+Direction basic_smart::HandleAtD()
 {
 	// checked if finished counting
 	if (m_nUnexploredOrDustyCellsCount == 0)
@@ -199,12 +213,12 @@ Direction _323500942_C::HandleAtD()
 	return HandleAdvanceToClean();
 }
 
-Direction _323500942_C::HandleFinish()
+Direction basic_smart::HandleFinish()
 {
 	return Direction::Stay;
 }
 
-void _323500942_C::aboutToFinish(int stepsTillFinishing)
+void basic_smart::aboutToFinish(int stepsTillFinishing)
 {
 	m_bAboutTofinish = true;
 	m_stepsTillFinishing = stepsTillFinishing;
@@ -212,15 +226,17 @@ void _323500942_C::aboutToFinish(int stepsTillFinishing)
 
 extern "C" {
 AbstractAlgorithm *maker(){
-   return new _323500942_C;
+   return new basic_smart;
 }
 class proxy { 
 public:
    proxy(){
       // register the maker with the factory 
-      factory["_323500942_C_"] = maker;
+      factory["basic_smart"] = maker;
    }
 };
 // our one instance of the proxy
 proxy p;
 }
+
+

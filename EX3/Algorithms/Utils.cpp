@@ -65,6 +65,44 @@ Direction reverseDir(Direction dir)
 	throw "Unreachible code was reached :o";
 }
 
+Direction LeftOf(Direction oDir)
+{
+	switch (oDir)
+	{
+	case Direction::North:
+		return Direction::West;
+	case Direction::East:
+		return Direction::North;
+	case Direction::South:
+		return Direction::East;
+	case Direction::West:
+		return Direction::South;
+	case Direction::Stay:
+		throw "There is no direction left of 'Stay'";
+	}
+
+	return Direction::Stay;
+}
+
+Direction RightOf(Direction oDir)
+{
+	switch (oDir)
+	{
+	case Direction::North:
+		return Direction::East;
+	case Direction::East:
+		return Direction::South;
+	case Direction::South:
+		return Direction::West;
+	case Direction::West:
+		return Direction::North;
+	case Direction::Stay:
+		throw "There is no direction left of 'Stay'";
+	}
+
+	return Direction::Stay;
+}
+
 Direction direction(Point from, Point to)
 {
 	if (to.i == from.i - 1 && to.j == from.j)

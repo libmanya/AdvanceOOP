@@ -28,6 +28,8 @@ using namespace std;
 // our global factory for making Algos
 map<string, maker_t*> factory;
 
+bool bDebug = true;
+
 vector<string> Logger::vHousesLog;
 vector<string> Logger::vAlgosLog;
 
@@ -524,7 +526,32 @@ void Simulator::RunOnHouseThread()
                 oScores[oSim->getAlgoFileName()][pHouse->GetHouseFileName()] = nScore;
                 m_mScoreLock.unlock();
 
-            }
+		if(bDebug)
+		{
+			cout << oSim->getHouse() << endl;
+
+			cout << "This simulation state: ";
+			switch(oSim->GetSimulationState())
+			{
+			case OneSimulation::SimulationStateType::AlgoMadeIllegalMove:
+				cout << "AlgoMadeIllegalMove"<< endl;
+				break;
+			case OneSimulation::SimulationStateType::Finished:
+				cout << "Finished"<< endl;
+				break;
+			case OneSimulation::SimulationStateType::OutOfBattery:
+				cout << "OutOfBattery"<< endl;
+				break;
+			case OneSimulation::SimulationStateType::Running:
+				cout << "Running"<< endl;
+				break;
+			}
+
+			cout << "This simulation steps: " <<oSim->getSteps() << endl;
+
+			cout << endl;
+		}
+        }
 
         for(AbstractAlgorithm *pAlgo : Algos)
             delete pAlgo;
@@ -621,37 +648,56 @@ Simulator::~Simulator()
 // Make single simulation step
 void Simulator::OneSimulation::MakeStep()
 {
-    //TODO - CHANGE PARAM TO STEP
-    Direction oDir = m_pAlgo->step();
+	Direction oDir = m_pAlgo->step(m_oPrevStep);
 
-    const int i = m_oHouse.GetVacuumPos().i;
-    const int j = m_oHouse.GetVacuumPos().j;
+	const int i = m_oHouse.GetVacuumPos().i;
+	const int j = m_oHouse.GetVacuumPos().j;
 
-    // spot illegal move
-    if(		(oDir == Direction::North 	&& (m_oHouse.GetVacuumPos().i == 0 								|| m_oHouse[i - 1][j    ] == WALL_CELL))
-            ||	(oDir == Direction::East 	&& (m_oHouse.GetVacuumPos().j == m_oHouse.GetColNumber() - 1	|| m_oHouse[i    ][j + 1] == WALL_CELL))
-            ||	(oDir == Direction::South 	&& (m_oHouse.GetVacuumPos().i == m_oHouse.GetRowNumber() - 1	|| m_oHouse[i + 1][j    ] == WALL_CELL))
-            ||	(oDir == Direction::West 	&& (m_oHouse.GetVacuumPos().j == 0						 		|| m_oHouse[i    ][j - 1] == WALL_CELL)))
-    {
-        SimulationState = AlgoMadeIllegalMove;
-        return;
-    }
+	if(STEP_MISTATCH)
+	{
+		// once every ten steps make a step in a random direction
+		if(m_nSteps % 10 == 0)
+		{
+			vector<Direction> vPosibleDirections;
 
-    // update vacuum position
-    m_oHouse.TryMoveVacuum(oDir);
+			if(m_oHouse[i - 1][j    ] != WALL_CELL) vPosibleDirections.push_back(Direction::North);
+			if(m_oHouse[i    ][j + 1] != WALL_CELL) vPosibleDirections.push_back(Direction::East);
+			if(m_oHouse[i + 1][j    ] != WALL_CELL) vPosibleDirections.push_back(Direction::South);
+			if(m_oHouse[i    ][j - 1] != WALL_CELL) vPosibleDirections.push_back(Direction::West);
 
-    m_nSteps++;
+			vPosibleDirections.push_back(Direction::Stay);
 
-    // check battery level
-    if (m_oHouse.GetBatteryLevel() == 0 && m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] != DOCKING_STATION_CELL)
-    {
-        SimulationState = OutOfBattery;
-        return;
-    }
+			oDir = vPosibleDirections[rand() % vPosibleDirections.size()];
+		}
+	}
 
-    // if all dirt collected and back to docking station mark as finished
-    if(m_oHouse.GetDirtCollected() == m_oHouse.GetInitialAmounthOfDirt() && m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] == DOCKING_STATION_CELL)
-        SimulationState = Finished;
+	m_oPrevStep = oDir;
+
+	// spot illegal move
+	if(		(oDir == Direction::North 	&& (m_oHouse.GetVacuumPos().i == 0 								|| m_oHouse[i - 1][j    ] == WALL_CELL))
+		||	(oDir == Direction::East 	&& (m_oHouse.GetVacuumPos().j == m_oHouse.GetColNumber() - 1	|| m_oHouse[i    ][j + 1] == WALL_CELL))
+		||	(oDir == Direction::South 	&& (m_oHouse.GetVacuumPos().i == m_oHouse.GetRowNumber() - 1	|| m_oHouse[i + 1][j    ] == WALL_CELL))
+		||	(oDir == Direction::West 	&& (m_oHouse.GetVacuumPos().j == 0						 		|| m_oHouse[i    ][j - 1] == WALL_CELL)))
+	{
+		SimulationState = AlgoMadeIllegalMove;
+		return;
+	}
+
+	// update vacuum position
+	m_oHouse.TryMoveVacuum(oDir);
+
+	m_nSteps++;
+
+	// check battery level
+	if (m_oHouse.GetBatteryLevel() == 0 && m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] != DOCKING_STATION_CELL)
+	{
+		SimulationState = OutOfBattery;
+		return;
+	}
+
+	// if all dirt collected and back to docking station mark as finished
+	if(m_oHouse.GetDirtCollected() == m_oHouse.GetInitialAmounthOfDirt() && m_oHouse[m_oHouse.GetVacuumPos().i][m_oHouse.GetVacuumPos().j] == DOCKING_STATION_CELL)
+		SimulationState = Finished;
 }
 
 // Calculate score

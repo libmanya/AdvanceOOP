@@ -34,6 +34,7 @@ const string CONFIG_FILE_NAME = "config.ini";
 const string ALGO_FILE_SUFFIX = ".so";
 const string SCORE_FILE_NAME = "score_formula.so";
 
+const bool STEP_MISTATCH = false;
 
 const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score_formula.so path>] [-threads <nu, threads>]";
 
@@ -64,6 +65,7 @@ public:
         {
             m_pAlgo->setConfiguration(m_config);
             m_pAlgo->setSensor(m_oSensor);
+	    m_oPrevStep = Direction::Stay;
 
             SimulationState = Running;
             m_sAlgoFileName = sAlgoName;
@@ -110,6 +112,7 @@ public:
 
     private:
 
+	Direction m_oPrevStep;
         bool m_bAnnouncedAboutToFinish = false;
         SimulationStateType SimulationState;
         House m_oHouse;
