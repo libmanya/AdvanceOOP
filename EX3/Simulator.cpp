@@ -287,14 +287,15 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
         if (stat(sScorePath.c_str(), &buf) == -1)
         {
             cout << USAGE << endl;
-            throw  InnerException("cannot find " + SCORE_FILE_NAME + " file in '" + GetFullPath(sScoreFilePath) +"'");
+            string strError = "cannot find " + SCORE_FILE_NAME + " file in '" + GetFullPath(sScoreFilePath) +"'";
+            throw  InnerException(strError);
         }
 
         void *pDlib = dlopen(sScorePath.c_str(), RTLD_NOW);
         if (pDlib == nullptr)
         {
             string strError = SCORE_FILE_NAME + "exists in " + (sScoreFilePath) +" but cannot be opened or is not a valid .so";
-            throw  InnerException(strError.c_str());
+            throw  InnerException(strError);
         }
         else
         {
@@ -305,7 +306,7 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
             if (dlsym_error) {
                 string strError = SCORE_FILE_NAME + "is a valid .so but it does not have a valid score formula";
                 dlclose(pDlib);
-                throw  InnerException(strError.c_str
+                throw  InnerException(strError);
             }
 
             m_bIsDefaultScore = false;
