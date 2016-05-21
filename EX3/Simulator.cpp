@@ -294,7 +294,7 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
         if (pDlib == nullptr)
         {
             string strError = SCORE_FILE_NAME + "exists in " + (sScoreFilePath) +" but cannot be opened or is not a valid .so";
-            Logger::addLogMSG(strError, Logger::LogType::score);
+            throw  InnerException(strError.c_str());
         }
         else
         {
@@ -304,8 +304,8 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
             const char *dlsym_error = dlerror();
             if (dlsym_error) {
                 string strError = SCORE_FILE_NAME + "is a valid .so but it does not have a valid score formula";
-                Logger::addLogMSG(strError, Logger::LogType::score);
                 dlclose(pDlib);
+                throw  InnerException(strError.c_str
             }
 
             m_bIsDefaultScore = false;
