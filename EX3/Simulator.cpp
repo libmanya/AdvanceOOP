@@ -417,7 +417,6 @@ void Simulator::RunOnHouseThread()
             vector<OneSimulation*> simulations;
             vector<AbstractAlgorithm*> Algos;
 
-            // TODO - CHANGE LOAD TO LOCAL VAR
             loadAlgorithms(Algos);
             loadSimulations(pHouse, simulations, Algos);
 
