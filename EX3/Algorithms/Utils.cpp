@@ -138,3 +138,5 @@ Point NeighbourTo(Point &point, Direction oDir)
 
 	throw "Unreachible code was reached :o";
 }
+
+

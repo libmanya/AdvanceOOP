@@ -561,18 +561,4 @@ void A1::aboutToFinish(int stepsTillFinishing)
 	m_stepsTillFinishing = stepsTillFinishing;
 }
 
-extern "C" {
-AbstractAlgorithm *maker(){
-   return new A1;
-}
-class proxy { 
-public:
-   proxy(){
-      // register the maker with the factory 
-      factory["A1"] = maker;
-   }
-};
-// our one instance of the proxy
-proxy p;
-}
 

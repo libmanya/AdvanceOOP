@@ -17,6 +17,8 @@
 #include "Utils.h"
 #include "ExternalAlgo.h"
 #include <cmath>
+#include "../makeUnique.h"
+#include "../AlgorithmRegistration.h"
 
 class A1 : public AbstractAlgorithm
 {
@@ -109,4 +111,5 @@ private:
 	bool AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset = 0);
 };
 
+REGISTER_ALGORITHM (A1)
 #endif /* A1_H_ */

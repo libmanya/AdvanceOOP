@@ -24,7 +24,8 @@
 #include "Utils.h"
 #include "ExternalAlgo.h"
 #include <cmath>
-
+#include "../makeUnique.h"
+#include "../AlgorithmRegistration.h"
 class B2 : public AbstractAlgorithm
 {
 
@@ -103,5 +104,7 @@ private:
 	bool oneLineDirtyAria(const vector<Point> &vFoundDirtyCells);
 	bool isAdjacentToWall(Point oPoint);
 };
+
+REGISTER_ALGORITHM (B2)
 
 #endif /* B2_H_ */

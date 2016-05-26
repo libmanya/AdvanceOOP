@@ -17,21 +17,23 @@
 #include "Algorithms/ExternalAlgo.h"
 #include <iomanip>
 #include <stdlib.h>
-
-
 #include <thread>
-
 #include <mutex>
+#include "AlgorithmRegistrar.h"
+#include "makeUnique.h"
+#include "AlgorithmRegistration.h"
 
 using namespace std;
-
-// our global factory for making Algos
-map<string, maker_t*> factory;
 
 bool bDebug = true;
 
 vector<string> Logger::vHousesLog;
 vector<string> Logger::vAlgosLog;
+AlgorithmRegistrar AlgorithmRegistrar::instance;
+
+AlgorithmRegistration::AlgorithmRegistration(std::function<unique_ptr<AbstractAlgorithm>()> algorithmFactory) {
+    AlgorithmRegistrar::getInstance().registerAlgorithm(algorithmFactory);
+}
 
 /* Returns a list of files in a directory */
 int GetFilesInDirectory(std::vector<string> &out, const string &directory)
@@ -64,7 +66,6 @@ int GetFilesInDirectory(std::vector<string> &out, const string &directory)
 
     return 0;
 }
-
 
 int GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<string> &vDirTypeFiles)
 {
@@ -114,49 +115,44 @@ string GetFullPath(const string& sRelativePath)
     return string(ptr);
 }
 
+int AlgorithmRegistrar::loadAlgorithm(const std::string& so_file_name) {
+    size_t size = instance.size();
+
+    void *pDlib;
+    pDlib = dlopen(so_file_name.c_str(), RTLD_NOW);
+    if (pDlib == nullptr)
+    {
+        string strError = getFileNameFromPath(so_file_name, true) + ": file cannot be loaded or is not a valid .so";
+        Logger::addLogMSG(strError, Logger::LogType::Algos);
+        return FILE_CANNOT_BE_LOADED;
+    }
+
+    if(instance.size() == size) {
+        string strError = getFileNameFromPath(so_file_name, true) + ": valid .so but no algorithm was registered after loading it";
+        Logger::addLogMSG(strError, Logger::LogType::Algos);
+        return NO_ALGORITHM_REGISTERED;
+    }
+
+    instance.setNameForLastAlgorithm(so_file_name);
+
+    return ALGORITHM_REGISTERED_SUCCESSFULY;
+}
+
 int Simulator::LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 {
-    int nErrorCount = 0;
-
     if(vAlgoFilesPaths.size() == 0)
     {
         cout << USAGE << endl;
         throw InnerException();
     }
 
-    void *pDlib;
-    for (const string& sAlgoPath : vAlgoFilesPaths)
-    {
-        size_t nOldFactorySize = factory.size();
+    AlgorithmRegistrar& registrar = AlgorithmRegistrar::getInstance();
 
-        pDlib = dlopen(sAlgoPath.c_str(), RTLD_NOW);
-        if (pDlib == nullptr)
-        {
-            string strError = getFileNameFromPath(sAlgoPath, true) + ": file cannot be loaded or is not a valid .so";
-            Logger::addLogMSG(strError, Logger::LogType::Algos);
-            nErrorCount++;
-        }
-        else
-        {
-            if(nOldFactorySize == factory.size())
-            {
-                string strError = getFileNameFromPath(sAlgoPath, true) + ": valid .so but no algorithm was registered after loading it";
-                Logger::addLogMSG(strError, Logger::LogType::Algos);
-                nErrorCount++;
-            }
-            else
-            {
-                size_t start = sAlgoPath.find_last_of(PATH_SEPARATOR) + 1;
-                size_t end = sAlgoPath.find_last_of('.');
-
-                m_vAlgoFileNames.push_back(sAlgoPath.substr(start, end - start));
-            }
-
-            m_vAlgoLibHandles.push_back(pDlib);
-        }
+    for(const auto& algorithmSoFileName : vAlgoFilesPaths) {
+        registrar.loadAlgorithm(algorithmSoFileName);
     }
 
-    if(nErrorCount == (int)vAlgoFilesPaths.size())
+    if(0 == (int) registrar.size())
     {
         string path = vAlgoFilesPaths[0];
         cout << "All algorithm files in target folder '"
@@ -169,9 +165,6 @@ int Simulator::LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 
         throw  InnerException();
     }
-
-    // lexicographically sort algo file names (needed to correctly display score table)
-    std::sort(m_vAlgoFileNames.begin(), m_vAlgoFileNames.end());
 
     return 0;
 }
@@ -361,49 +354,30 @@ void Simulator::GetSOFiles(std::vector<string> &vDirAlgosFilesOut, const string 
     GetFilesListWithSuffix(sAlgosPath, "so", vDirAlgosFilesOut);
 }
 
-// Reloads simulations
-void Simulator::ReloadSimulations(House *oHouse)
+void Simulator::loadAlgorithms(vector<unique_ptr<AbstractAlgorithm>>& Algos)
 {
-    for(OneSimulation *pSim : m_vSimulations)
-        delete pSim;
+    AlgorithmRegistrar& registrar = AlgorithmRegistrar::getInstance();
+    auto algorithms = registrar.getAlgorithms();
+    auto algorithmsNames = registrar.getAlgorithmNames();
+    auto pName = algorithmsNames.begin();
 
-    m_vSimulations.clear();
-    int i = 0;
-    for(AbstractAlgorithm *pAlgo : m_vAlgos)
+    for(auto& algorithm: algorithms)
     {
-        m_vSimulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config, m_vAlgoFileNames[i]));
-        i++;
+        Algos.push_back(std::move(algorithm));
+        string sAlgoPath = *pName;
+        size_t start = sAlgoPath.find_last_of(PATH_SEPARATOR) + 1;
+        size_t end = sAlgoPath.find_last_of('.');
+        m_vAlgoFileNames.push_back(sAlgoPath.substr(start, end - start));
+        pName++;
     }
 }
 
-// Reloads algorithms
-void Simulator::ReloadAlgorithms()
-{
-    for(AbstractAlgorithm *pAlgo : m_vAlgos)
-        delete pAlgo;
-
-    m_vAlgos.clear();
-
-    for(auto itr = factory.begin(); itr != factory.end(); itr++)
-    {
-        m_vAlgos.push_back((itr->second)());
-    }
-}
-
-void Simulator::loadAlgorithms(vector<AbstractAlgorithm*>& Algos)
-{
-    for(auto itr = factory.begin(); itr != factory.end(); itr++)
-    {
-        Algos.push_back((itr->second)());
-    }
-}
-
-void Simulator::loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<AbstractAlgorithm*>& Algos)
+void Simulator::loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<unique_ptr<AbstractAlgorithm>>& Algos)
 {
     int i = 0;
-    for(AbstractAlgorithm *pAlgo : Algos)
+    for(unique_ptr<AbstractAlgorithm>& pAlgo : Algos)
     {
-        simulations.push_back(new Simulator::OneSimulation(*oHouse, pAlgo, m_config, m_vAlgoFileNames[i]));
+        simulations.push_back(new Simulator::OneSimulation(*oHouse, std::move(pAlgo), m_config, m_vAlgoFileNames[i]));
         i++;
     }
 }
@@ -417,7 +391,7 @@ void Simulator::RunOnHouseThread()
         if(pHouse != nullptr)
         {
             vector<OneSimulation*> simulations;
-            vector<AbstractAlgorithm*> Algos;
+            vector<unique_ptr<AbstractAlgorithm>> Algos;
 
             loadAlgorithms(Algos);
             loadSimulations(pHouse, simulations, Algos);
@@ -451,6 +425,7 @@ void Simulator::RunOnHouseThread()
                         }
 
                         // Make a single simulation step
+
                         oSim->MakeStep();
 
                         if(oSim->GetSimulationState() == OneSimulation::Finished)
@@ -553,8 +528,6 @@ void Simulator::RunOnHouseThread()
 		}
         }
 
-        for(AbstractAlgorithm *pAlgo : Algos)
-            delete pAlgo;
 
         for(OneSimulation *pSim : simulations)
             delete pSim;

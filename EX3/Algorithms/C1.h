@@ -17,6 +17,8 @@
 #include "Utils.h"
 #include "ExternalAlgo.h"
 #include <cmath>
+#include "../makeUnique.h"
+#include "../AlgorithmRegistration.h"
 
 class C1 : public AbstractAlgorithm
 {
@@ -99,5 +101,5 @@ private:
 	bool isWallOrUnknown(Point oPoint);
 };
 
-
+REGISTER_ALGORITHM (C1)
 #endif /* C1_H_ */

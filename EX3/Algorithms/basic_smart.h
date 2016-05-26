@@ -16,6 +16,9 @@
 #include "BFS.h"
 #include "Utils.h"
 #include "ExternalAlgo.h"
+#include "../makeUnique.h"
+#include "../AlgorithmRegistration.h"
+
 
 class basic_smart : public AbstractAlgorithm
 {
@@ -88,4 +91,5 @@ private:
 	Direction HandleFinish();
 };
 
+REGISTER_ALGORITHM (basic_smart)
 #endif /* basic_smart_H_ */

@@ -33,18 +33,15 @@ const string THREAD_NUM_FLAG = "-threads";
 const string CONFIG_FILE_NAME = "config.ini";
 const string ALGO_FILE_SUFFIX = ".so";
 const string SCORE_FILE_NAME = "score_formula.so";
-
 const bool STEP_MISTATCH = false;
-
 const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score_formula.so path>] [-threads <nu, threads>]";
 
 typedef int (*score_t)(const map<string, int>&);
 score_t calc_score;
- //int calc_score(const map<string, int>& score_params);
-
-using namespace std;
 
 string trim(string& str);
+
+using namespace std;
 
 class Simulator
 {
@@ -61,11 +58,11 @@ public:
     public:
         enum SimulationStateType { Finished, OutOfBattery, AlgoMadeIllegalMove, Running };
 
-        OneSimulation(const House &oHouse, AbstractAlgorithm* pAlgo, map<string, int> &oConfig, const string &sAlgoName): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(pAlgo), m_config(oConfig)
+        OneSimulation(const House &oHouse, unique_ptr<AbstractAlgorithm> pAlgo, map<string, int> &oConfig, const string &sAlgoName): m_oHouse(oHouse), m_oSensor(m_oHouse), m_pAlgo(std::move(pAlgo)), m_config(oConfig)
         {
             m_pAlgo->setConfiguration(m_config);
             m_pAlgo->setSensor(m_oSensor);
-	    m_oPrevStep = Direction::Stay;
+            m_oPrevStep = Direction::Stay;
 
             SimulationState = Running;
             m_sAlgoFileName = sAlgoName;
@@ -112,12 +109,12 @@ public:
 
     private:
 
-	Direction m_oPrevStep;
+        Direction m_oPrevStep;
         bool m_bAnnouncedAboutToFinish = false;
         SimulationStateType SimulationState;
         House m_oHouse;
         Sensor m_oSensor;
-        AbstractAlgorithm* m_pAlgo;
+        unique_ptr<AbstractAlgorithm> m_pAlgo;
         map<string, int> &m_config;
         int m_nSteps = 0;
         int m_nActualPositionInCompetition = 0;
@@ -131,8 +128,8 @@ private:
     void GetSOFiles(std::vector<string> &vDirAlgosFiles, const string &sHousesPath);
     void ReloadAlgorithms();
     void ReloadSimulations(House *oHouse);
-    void loadAlgorithms(vector<AbstractAlgorithm*>& Algos);
-    void loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<AbstractAlgorithm*>& Algos);
+    void loadAlgorithms(vector<unique_ptr<AbstractAlgorithm>>& Algos);
+    void loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<unique_ptr<AbstractAlgorithm>>& Algos);
     void LoadScoreFile(const string &sCScoreilePath);
     int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
     void RunOnHouseThread();

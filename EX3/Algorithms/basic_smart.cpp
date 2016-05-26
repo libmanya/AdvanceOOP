@@ -224,19 +224,4 @@ void basic_smart::aboutToFinish(int stepsTillFinishing)
 	m_stepsTillFinishing = stepsTillFinishing;
 }
 
-extern "C" {
-AbstractAlgorithm *maker(){
-   return new basic_smart;
-}
-class proxy { 
-public:
-   proxy(){
-      // register the maker with the factory 
-      factory["basic_smart"] = maker;
-   }
-};
-// our one instance of the proxy
-proxy p;
-}
-
 
