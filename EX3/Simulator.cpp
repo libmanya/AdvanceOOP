@@ -14,7 +14,6 @@
 #include <list>
 #include <map>
 #include <sys/stat.h>
-#include "Algorithms/ExternalAlgo.h"
 #include <iomanip>
 #include <stdlib.h>
 #include <thread>
@@ -25,11 +24,14 @@
 
 using namespace std;
 
-bool bDebug = true;
+bool bDebug = false;
 
 vector<string> Logger::vHousesLog;
 vector<string> Logger::vAlgosLog;
+vector<string> Logger::vScoresLog;
 AlgorithmRegistrar AlgorithmRegistrar::instance;
+
+typedef void * __attribute__ ((__may_alias__)) pvoid_may_alias_t;
 
 AlgorithmRegistration::AlgorithmRegistration(std::function<unique_ptr<AbstractAlgorithm>()> algorithmFactory) {
     AlgorithmRegistrar::getInstance().registerAlgorithm(algorithmFactory);
@@ -78,9 +80,17 @@ int GetFilesListWithSuffix(const string &sPath, const string &sSuffix, vector<st
 
     for(auto oFileIter = vDirFiles.cbegin(); oFileIter != vDirFiles.cend(); oFileIter++)
     {
-        size_t nPos = oFileIter->find_last_of(".");
-        if(nPos != string::npos && oFileIter->substr(nPos + 1) == sSuffix)
-            vDirTypeFiles.push_back(*oFileIter);
+    	size_t nSuffixLen = sSuffix.length();
+
+    	if(oFileIter->length() >= nSuffixLen)
+    	{
+    		if(oFileIter->substr(oFileIter->length() - nSuffixLen, nSuffixLen) == sSuffix)
+                vDirTypeFiles.push_back(*oFileIter);
+    	}
+
+        //size_t nPos = oFileIter->find_last_of(".");
+        //if(nPos != string::npos && oFileIter->substr(nPos + 1) == sSuffix)
+         //   vDirTypeFiles.push_back(*oFileIter);
     }
 
     return 0;
@@ -112,6 +122,9 @@ string GetFullPath(const string& sRelativePath)
 
     ptr = realpath(sRelativePath.c_str(), pActualpath);
 
+    if( ptr == nullptr )
+    	throw InnerException("Path doesn't exist");
+
     return string(ptr);
 }
 
@@ -140,12 +153,6 @@ int AlgorithmRegistrar::loadAlgorithm(const std::string& so_file_name) {
 
 int Simulator::LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
 {
-    if(vAlgoFilesPaths.size() == 0)
-    {
-        cout << USAGE << endl;
-        throw InnerException();
-    }
-
     AlgorithmRegistrar& registrar = AlgorithmRegistrar::getInstance();
 
     for(const auto& algorithmSoFileName : vAlgoFilesPaths) {
@@ -181,6 +188,11 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
     LoadScoreFile(scorePath);
 
     GetSOFiles(vDirAlgosFiles, sAlgosPath);
+    if(vDirAlgosFiles.size() == 0)
+    {
+        string sMsg = USAGE + "\n" + "cannot find algorithm files in '" + GetFullPath(sAlgosPath) + "'";
+        throw InnerException(sMsg);
+    }
     LoadAlgoFilesToFactory(vDirAlgosFiles);
 
     // Load houses
@@ -200,15 +212,21 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
     struct stat buf;
 
     if (stat(sConfigFilePath.c_str(), &buf) == -1)
-        throw  InnerException(USAGE);
+    {
+    	string sMsg = "cannot find config.ini file in '" + GetFullPath(getFolderPath(sConfigFilePath)) + "'";
+        throw  InnerException(USAGE + "\n" + sMsg);
+    }
 
     ifstream fin(sConfigFilePath);
     //check if file open with path, if not try open file in current dir
     if (!fin)
     {
-        string strError = "config.ini exists in '" + GetFullPath(sConfigFilePath) + "' but cannot be opened";
+        string strError = "config.ini exists in '" + GetFullPath(getFolderPath(sConfigFilePath)) + "' but cannot be opened";
         throw  InnerException(strError);
     }
+
+    int nBadCount = 0;
+    string strBadParams = "";
 
     while (getline(fin, line))
     {
@@ -222,7 +240,17 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
                 tokens.push_back(item);
             }
 
-            m_config[trim(tokens[0])] = stoi(trim(tokens[1]));
+            int nParam = atoi(trim(tokens[1]).c_str());
+        	m_config[trim(tokens[0])] = nParam;
+
+            if(nParam <= 0)
+            {
+            	if(nBadCount != 0)
+            		strBadParams += ", ";
+
+            	nBadCount++;
+            	strBadParams += trim(tokens[0]);
+            }
         }
     }
 
@@ -266,6 +294,11 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
     if(nMissingCount != 0)
     {
         string strError = std::string("config.ini missing ") + std::to_string(nMissingCount) + std::string(" parameter(s): ") + strMissingParams;
+
+        if(nBadCount != 0)
+        	strError += "\n" + string("config.ini having bad values for ") + to_string(nBadCount) + std::string(" parameter(s): ") + strBadParams;
+
+
         throw InnerException(strError);
     }
 }
@@ -282,28 +315,28 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
         if (stat(sScorePath.c_str(), &buf) == -1)
         {
             cout << USAGE << endl;
-            string strError = "cannot find " + SCORE_FILE_NAME + " file in '" + GetFullPath(sScoreFilePath) +"'";
+            string strError = "cannot find " + SCORE_FILE_NAME + " file in '" + GetFullPath(getFolderPath(sScoreFilePath)) +"'";
             throw  InnerException(strError);
         }
 
         void *pDlib = dlopen(sScorePath.c_str(), RTLD_NOW);
         if (pDlib == nullptr)
         {
-            string strError = SCORE_FILE_NAME + "exists in " + (sScoreFilePath) +" but cannot be opened or is not a valid .so";
+            string strError = SCORE_FILE_NAME + " exists in '" + GetFullPath(getFolderPath(sScoreFilePath)) +"' but cannot be opened or is not a valid .so";
             throw  InnerException(strError);
         }
         else
         {
             dlerror();
 
-            calc_score = (score_t) dlsym(pDlib, "calc_score");
+	    *(pvoid_may_alias_t *)(&calc_score) = dlsym(pDlib, "calc_score");
             const char *dlsym_error = dlerror();
             if (dlsym_error) {
-                string strError = SCORE_FILE_NAME + "is a valid .so but it does not have a valid score formula";
+                string strError = SCORE_FILE_NAME + " is a valid .so but it does not have a valid score formula";
                 dlclose(pDlib);
                 throw  InnerException(strError);
             }
-
+		
             m_bIsDefaultScore = false;
         }
     }
@@ -317,8 +350,8 @@ void Simulator::LoadHouses(const string &sHousesPath)
 
     if (nRC == -1 || vDirHousesFiles.size() == 0)
     {
-        cout << USAGE << endl;
-        throw InnerException();
+        string sMsg = USAGE + "\n" + "cannot find house files in '" + GetFullPath(sHousesPath) + "'";
+        throw InnerException(sMsg);
     }
 
     // load houses
@@ -326,12 +359,10 @@ void Simulator::LoadHouses(const string &sHousesPath)
     {
         string sHouseFileName = getFileNameFromPath(sHouse, false);
 
-        House* pTempHouse = new House(std::move(sHouseFileName), sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]);
+        unique_ptr<House> pTempHouse = make_unique<House>(std::move(sHouseFileName), sHouse, m_config[BATTERY_CAPACITY_KEY], m_config[BATTERY_CONSUMPTION_KEY], m_config[BATTERY_RECHARGE_KEY]);
 
-        if (pTempHouse->isLoadFailed())
-            delete pTempHouse;
-        else
-            m_vOriginalHouses.push_back(pTempHouse);
+        if (!pTempHouse->isLoadFailed())
+            m_vOriginalHouses.push_back(std::move(pTempHouse));
     }
 
     if (m_vOriginalHouses.size() == 0)
@@ -351,7 +382,7 @@ void Simulator::LoadHouses(const string &sHousesPath)
 void Simulator::GetSOFiles(std::vector<string> &vDirAlgosFilesOut, const string &sAlgosPath)
 {
     // find house files
-    GetFilesListWithSuffix(sAlgosPath, "so", vDirAlgosFilesOut);
+    GetFilesListWithSuffix(sAlgosPath, ALGO_FILE_SUFFIX, vDirAlgosFilesOut);
 }
 
 void Simulator::loadAlgorithms(vector<unique_ptr<AbstractAlgorithm>>& Algos)
@@ -372,12 +403,12 @@ void Simulator::loadAlgorithms(vector<unique_ptr<AbstractAlgorithm>>& Algos)
     }
 }
 
-void Simulator::loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<unique_ptr<AbstractAlgorithm>>& Algos)
+void Simulator::loadSimulations(unique_ptr<House> &oHouse, vector<unique_ptr<OneSimulation>> &vSimulations, vector<unique_ptr<AbstractAlgorithm>>& Algos)
 {
     int i = 0;
-    for(unique_ptr<AbstractAlgorithm>& pAlgo : Algos)
+    for(unique_ptr<AbstractAlgorithm>& oAlgo : Algos)
     {
-        simulations.push_back(new Simulator::OneSimulation(*oHouse, std::move(pAlgo), m_config, m_vAlgoFileNames[i]));
+        vSimulations.push_back(make_unique<OneSimulation>(*oHouse, std::move(oAlgo), m_config, m_vAlgoFileNames[i]));
         i++;
     }
 }
@@ -386,15 +417,15 @@ void Simulator::RunOnHouseThread()
 {
     while (!m_HouseQueue.isEmpty())
     {
-        House* pHouse = m_HouseQueue.pop();
+        unique_ptr<House> pHouse = m_HouseQueue.pop();
 
         if(pHouse != nullptr)
         {
-            vector<OneSimulation*> simulations;
+            vector<unique_ptr<OneSimulation>> vSimulations;
             vector<unique_ptr<AbstractAlgorithm>> Algos;
 
             loadAlgorithms(Algos);
-            loadSimulations(pHouse, simulations, Algos);
+            loadSimulations(pHouse, vSimulations, Algos);
 
             bool bSomeActive = true;
             bool bIsWinner = false;
@@ -402,7 +433,7 @@ void Simulator::RunOnHouseThread()
             int nSimulationSteps = 0;
             int nMaxSimulationSteps = pHouse->GetMaxSteps(); // Get From House
             int nWinnerSteps = 0;
-            OneSimulation* lastFinnished = nullptr;
+            int nlastFinnished = -1;
             int nFinishedCount = 0;
 
                     // Run until some algorithms didn't finish and simulation maximum steps count was not reached
@@ -411,8 +442,9 @@ void Simulator::RunOnHouseThread()
                     && (!bIsWinner || nSimulationSteps < nWinnerSteps + m_config[MAX_STEPS_AFTER_KEY]))
             {
                 bSomeActive = false;
-                for(OneSimulation *oSim : simulations)
+                for(size_t i = 0; i < vSimulations.size(); i++)
                 {
+                	unique_ptr<OneSimulation> &oSim = vSimulations[i];
 
                     if(oSim->GetSimulationState() == OneSimulation::Running)
                     {
@@ -431,10 +463,10 @@ void Simulator::RunOnHouseThread()
                         if(oSim->GetSimulationState() == OneSimulation::Finished)
                         {
                             // calculate Actual Position In Competition according to forum post by Amir
-                            if (lastFinnished != nullptr) // someone already won
+                            if (nlastFinnished != -1) // someone already won
                             {
-                                if (lastFinnished->getSteps() == oSim->getSteps()) // someone finished on the same step
-                                    oSim->SetActualPositionInCompetition(lastFinnished->GetActualPositionInCompetition());  // set the same ActualPositionInCompetition
+                                if (vSimulations[nlastFinnished]->getSteps() == oSim->getSteps()) // someone finished on the same step
+                                    oSim->SetActualPositionInCompetition(vSimulations[nlastFinnished]->GetActualPositionInCompetition());  // set the same ActualPositionInCompetition
                                 else
                                     oSim->SetActualPositionInCompetition(nFinishedCount + 1);
                             }
@@ -443,7 +475,7 @@ void Simulator::RunOnHouseThread()
                                 oSim->SetActualPositionInCompetition(1);
                             }
 
-                            lastFinnished = oSim;
+                            nlastFinnished = (int)i;
 
                             // if there was no winner until now: save winner steps and remember to announce winner at the beginning of the next round
                             if(!bIsWinner)
@@ -464,36 +496,43 @@ void Simulator::RunOnHouseThread()
             int nScore;
 
             // calculate and print score
-            for(OneSimulation *oSim : simulations)
+            for(size_t i = 0; i < vSimulations.size(); i++)
             {
-                if(m_bIsDefaultScore)
-                {
-                    nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
-                }
+            	unique_ptr<OneSimulation> &oSim = vSimulations[i];
+
+                if (oSim->GetSimulationState() == OneSimulation::AlgoMadeIllegalMove)
+                    nScore = 0;
                 else
                 {
-                    map<string, int> mScoreParams;
-
-                    //Add all paramters
-                    mScoreParams.insert(pair<string,int>("actual_position_in_competition", oSim->GetActualPositionInCompetition()));
-                    mScoreParams.insert(pair<string,int>("simulation_steps", nSimulationSteps));
-                    mScoreParams.insert(pair<string,int>("winner_num_steps", nWinnerSteps));
-                    mScoreParams.insert(pair<string,int>("this_num_steps", oSim->getSteps()));
-                    mScoreParams.insert(pair<string,int>("sum_dirt_in_house", oSim->getHouse().GetInitialAmounthOfDirt()));
-                    mScoreParams.insert(pair<string,int>("dirt_collected", oSim->getHouse().GetDirtCollected()));
-
-                    int nIsinDockling = (oSim->getHouse().isVacuumInDocking()) ? 1 : 0;
-                    mScoreParams.insert(pair<string,int>("is_back_in_docking", nIsinDockling));
-
-                    nScore = calc_score(mScoreParams);
-                    if(nScore == -1 && !m_bIsScoreError)
+                    if(m_bIsDefaultScore)
                     {
-                        m_mScoreErrorLock.lock();
-                        string strError = "Score formula could not calculate some scores, see -1 in the results table";
-                        Logger::addLogMSG(strError, Logger::LogType::score);
-                        m_bIsScoreError = true;
-                        m_mScoreErrorLock.unlock();
+                        nScore = oSim->CalculateScore(nWinnerSteps, bIsWinner, nSimulationSteps);
+                    }
+                    else
+                    {
+                        map<string, int> mScoreParams;
 
+                        //Add all paramters
+                        mScoreParams.insert(pair<string,int>("actual_position_in_competition", oSim->GetActualPositionInCompetition()));
+                        mScoreParams.insert(pair<string,int>("simulation_steps", nSimulationSteps));
+                        mScoreParams.insert(pair<string,int>("winner_num_steps", nWinnerSteps));
+                        mScoreParams.insert(pair<string,int>("this_num_steps", oSim->getSteps()));
+                        mScoreParams.insert(pair<string,int>("sum_dirt_in_house", oSim->getHouse().GetInitialAmounthOfDirt()));
+                        mScoreParams.insert(pair<string,int>("dirt_collected", oSim->getHouse().GetDirtCollected()));
+
+                        int nIsinDockling = (oSim->getHouse().isVacuumInDocking()) ? 1 : 0;
+                        mScoreParams.insert(pair<string,int>("is_back_in_docking", nIsinDockling));
+
+                        nScore = calc_score(mScoreParams);
+                        if(nScore == -1 && !m_bIsScoreError)
+                        {
+                            m_mScoreErrorLock.lock();
+                            string strError = "Score formula could not calculate some scores, see -1 in the results table";
+                            Logger::addLogMSG(strError, Logger::LogType::Scores);
+                            m_bIsScoreError = true;
+                            m_mScoreErrorLock.unlock();
+
+                        }
                     }
                 }
 
@@ -522,17 +561,13 @@ void Simulator::RunOnHouseThread()
 				break;
 			}
 
-			cout << "This simulation steps: " <<oSim->getSteps() << endl;
+			cout << "This simulation steps: " << oSim->getSteps() << endl;
 
 			cout << endl;
 		}
         }
 
-
-        for(OneSimulation *pSim : simulations)
-            delete pSim;
-
-        simulations.clear();
+        vSimulations.clear();
         Algos.clear();
         }
     }
@@ -541,9 +576,9 @@ void Simulator::RunOnHouseThread()
 // Runs the simulation
 void Simulator::Run()
 {
-    for(House *pHouse : m_vOriginalHouses)
+    for(unique_ptr<House> &pHouse : m_vOriginalHouses)
     {
-        m_HouseQueue.push(pHouse);
+        m_HouseQueue.push(std::move(pHouse));
     }
 
     vector<thread> threads;
@@ -580,7 +615,47 @@ void Simulator::Run()
 
     cout << setw(nLineN) << setfill(lineSep)<<  lineSep << endl;
     // for each algorithm: print scores
+    vector<pair<string, map<string, int>>> vScores;
     for(const auto &oAlgoHousesPair: oScores)
+    {
+    	vScores.push_back(oAlgoHousesPair);
+    }
+
+    for(size_t i = 0; i < vScores.size(); i++)
+    {
+        int nCount = 0;
+        int nSum = 0;
+
+		for(const auto &oHousesScoresPair : vScores[i].second)
+		{
+			nCount++;
+			nSum += oHousesScoresPair.second;
+		}
+
+		double dAvgi = nSum / (double)nCount;
+
+    	for(size_t j = i + 1; j < vScores.size(); j++)
+    	{
+            int nCount = 0;
+            int nSum = 0;
+
+    		for(const auto &oHousesScoresPair : vScores[j].second)
+    		{
+    			nCount++;
+    			nSum += oHousesScoresPair.second;
+    		}
+
+    		double dAvgj = nSum / (double)nCount;
+
+    		if(dAvgj > dAvgi)
+    		{
+    			std::swap(vScores[i], vScores[j]);
+    			dAvgi = dAvgj;
+    		}
+    	}
+    }
+
+    for(const auto &oAlgoHousesPair: vScores)
     {
         cout << seperator << left << setw(nameWidth) << setfill(space) << oAlgoHousesPair.first << seperator;
 
@@ -605,14 +680,14 @@ void Simulator::Run()
 
 Simulator::~Simulator()
 {
-    for(OneSimulation *pSim : m_vSimulations)
-        delete pSim;
+    /*for(OneSimulation *pSim : m_vSimulations)
+          pSim;*/
 
-    for(AbstractAlgorithm *pAlgo : m_vAlgos)
-        delete pAlgo;
+    /*for(AbstractAlgorithm *pAlgo : m_vAlgos)
+        delete pAlgo;*/
 
-    for(House *pHouse : m_vOriginalHouses)
-        delete pHouse;
+    /*for(House *pHouse : m_vOriginalHouses)
+        delete pHouse;*/
 
     for(auto pHandle : m_vAlgoLibHandles)
         dlclose(pHandle);
@@ -805,6 +880,9 @@ int main(int argsc, char **argv)
             cout << sLogEntry << endl;
 
         for(const string &sLogEntry : Logger::getLog(Logger::LogType::Algos, true))
+            cout << sLogEntry << endl;
+
+        for(const string &sLogEntry : Logger::getLog(Logger::LogType::Scores, true))
             cout << sLogEntry << endl;
     }
     catch (exception& ex)

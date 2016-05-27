@@ -35,7 +35,7 @@ Direction C1::step(Direction prevStep)
 		// reenter AdvanceToClean state;
 
 		m_bIsCurrentPathInit = false;		// recalculate path
-		//m_oCurrentState = AlgoState::FindWall;
+		m_oCurrentState = AlgoState::FindWall;
 
 		m_nMismatchCount++;
 	}

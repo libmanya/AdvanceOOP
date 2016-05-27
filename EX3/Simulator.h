@@ -31,10 +31,10 @@ const string ALGO_PATH_FLAG = "-algorithm_path";
 const string SCORE_PATH_FLAG = "-score_formula";
 const string THREAD_NUM_FLAG = "-threads";
 const string CONFIG_FILE_NAME = "config.ini";
-const string ALGO_FILE_SUFFIX = ".so";
+const string ALGO_FILE_SUFFIX = "_.so";
 const string SCORE_FILE_NAME = "score_formula.so";
 const bool STEP_MISTATCH = false;
-const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score_formula.so path>] [-threads <nu, threads>]";
+const string USAGE = "Usage: simulator [-config <config path>] [-house_path <house path>] [-algorithm_path <algorithm path>] [-score_formula <score .so path>] [-threads <num threads>]";
 
 typedef int (*score_t)(const map<string, int>&);
 score_t calc_score;
@@ -129,13 +129,13 @@ private:
     void ReloadAlgorithms();
     void ReloadSimulations(House *oHouse);
     void loadAlgorithms(vector<unique_ptr<AbstractAlgorithm>>& Algos);
-    void loadSimulations(House *oHouse, vector<OneSimulation*>& simulations, vector<unique_ptr<AbstractAlgorithm>>& Algos);
+    void loadSimulations(unique_ptr<House> &oHouse, vector<unique_ptr<OneSimulation>> &vSimulations, vector<unique_ptr<AbstractAlgorithm>>& Algos);
     void LoadScoreFile(const string &sCScoreilePath);
     int LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths);
     void RunOnHouseThread();
 
     vector<OneSimulation*> m_vSimulations;
-    vector<House*> m_vOriginalHouses;
+    vector<unique_ptr<House>> m_vOriginalHouses;
     vector<AbstractAlgorithm*> m_vAlgos;
 
     map<string, int> m_config;
@@ -145,9 +145,10 @@ private:
     mutex m_mScoreLock;
     map<string, map<string, int>> oScores;
     bool m_bIsDefaultScore = true;
-    Concurrent_Queue<House*> m_HouseQueue;
+    Concurrent_Queue<unique_ptr<House>> m_HouseQueue;
     bool m_bIsScoreError = false;
     mutex m_mScoreErrorLock;
+
 };
 
 struct InnerException : public exception

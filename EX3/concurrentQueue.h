@@ -17,7 +17,7 @@ class Concurrent_Queue
       return nullptr;
     }
 
-    auto item = m_qQueue.front();
+    auto item = std::move(m_qQueue.front());
     m_qQueue.pop();
 
     m_mMutex.unlock();
@@ -29,6 +29,14 @@ class Concurrent_Queue
 
     m_mMutex.lock();
     m_qQueue.push(item);
+    m_mMutex.unlock();
+  }
+
+  void push(T&& item)
+  {
+
+    m_mMutex.lock();
+    m_qQueue.push(std::move(item));
     m_mMutex.unlock();
   }
 

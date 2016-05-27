@@ -15,7 +15,6 @@
 #include "TwoDDynamicArray.h"
 #include "BFS.h"
 #include "Utils.h"
-#include "ExternalAlgo.h"
 #include "../makeUnique.h"
 #include "../AlgorithmRegistration.h"
 

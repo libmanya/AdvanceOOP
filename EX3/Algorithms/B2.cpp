@@ -229,13 +229,13 @@ Direction B2::HandleClean()
 			}
 			else
 			{
-				/*BFS::BFSResult result;
+				BFS::BFSResult result;
 				BFS::Path oTempPath;
 				BFS::run(result, m_oMatrix, oSearchPoint, {'D'}, m_oNonWallChars);
 
 				BFS::getPath(oTempPath, result);
 				oTempPath.removeLast();   // dont step into the D
-				m_oCurrentPath.addPath(oTempPath);*/
+				m_oCurrentPath.addPath(oTempPath);
 			}
 
 		}
