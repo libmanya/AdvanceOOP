@@ -248,10 +248,14 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
             }
 
             int nParam = atoi(trim(tokens[1]).c_str());
+            string strKey = trim(tokens[0]);
+        	m_config[strKey] = nParam;
 
-        	m_config[trim(tokens[0])] = nParam;
-
-            if(nParam <= 0)
+            if((nParam <= 0) &&
+                ((strKey.compare(BATTERY_CAPACITY_KEY) == 0) ||
+                 (strKey.compare(BATTERY_CONSUMPTION_KEY) == 0) ||
+                 (strKey.compare(BATTERY_RECHARGE_KEY) == 0) ||
+                 (strKey.compare(MAX_STEPS_AFTER_KEY) == 0)))
             {
             	if(nBadCount != 0)
             		strBadParams += ", ";
