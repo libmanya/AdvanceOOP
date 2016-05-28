@@ -148,6 +148,7 @@ private:
     Concurrent_Queue<unique_ptr<House>> m_HouseQueue;
     bool m_bIsScoreError = false;
     mutex m_mScoreErrorLock;
+    void* m_ptrScoreHandle = nullptr;
 
 };
 

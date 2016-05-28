@@ -140,6 +140,8 @@ int AlgorithmRegistrar::loadAlgorithm(const std::string& so_file_name) {
         return FILE_CANNOT_BE_LOADED;
     }
 
+    m_vAlgoLibHandles.push_back(pDlib);
+
     if(instance.size() == size) {
         string strError = getFileNameFromPath(so_file_name, true) + ": valid .so but no algorithm was registered after loading it";
         Logger::addLogMSG(strError, Logger::LogType::Algos);
@@ -147,6 +149,7 @@ int AlgorithmRegistrar::loadAlgorithm(const std::string& so_file_name) {
     }
 
     instance.setNameForLastAlgorithm(so_file_name);
+
 
     return ALGORITHM_REGISTERED_SUCCESSFULY;
 }
@@ -366,6 +369,7 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
             }
 
             m_bIsDefaultScore = false;
+            m_ptrScoreHandle = pDlib;
         }
     }
 }
@@ -609,16 +613,22 @@ void Simulator::Run()
         m_HouseQueue.push(std::move(pHouse));
     }
 
-    vector<thread> threads;
-    for(int i = 0; i < m_nNumOfThreads; i++)
+    if(m_nNumOfThreads > 1)
     {
-        threads.push_back(thread(&Simulator::RunOnHouseThread,this));
-    }
+        vector<thread> threads;
+        for(int i = 0; i < m_nNumOfThreads; i++)
+        {
+            threads.push_back(thread(&Simulator::RunOnHouseThread,this));
+        }
 
-    for(auto& thread_ptr : threads) {
-        thread_ptr.join();
+        for(auto& thread_ptr : threads) {
+            thread_ptr.join();
+        }
     }
-
+    else
+    {
+        RunOnHouseThread();
+    }
 
     int nameWidth = 13;
     int scoreWidth = 10;
@@ -717,8 +727,10 @@ Simulator::~Simulator()
     /*for(House *pHouse : m_vOriginalHouses)
         delete pHouse;*/
 
-    for(auto pHandle : m_vAlgoLibHandles)
-        dlclose(pHandle);
+    if(!m_bIsDefaultScore)
+    {
+        dlclose(m_ptrScoreHandle);
+    }
 }
 
 // Make single simulation step

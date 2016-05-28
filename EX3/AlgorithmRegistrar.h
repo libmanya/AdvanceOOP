@@ -31,6 +31,13 @@ public:
         }
         return algorithms;
     }
+
+    void freeAlgorithmsHandles()
+    {
+        for(auto pHandle : m_vAlgoLibHandles)
+            dlclose(pHandle);
+    }
+
     const list<std::string>& getAlgorithmNames()const {
         return algorithmNames;
     }
@@ -42,4 +49,5 @@ public:
     }
 private:
     static AlgorithmRegistrar instance;
+    vector<void*> m_vAlgoLibHandles;
 };
