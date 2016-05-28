@@ -201,7 +201,14 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
     //check valid number of thread - initialize to 1
     if(numOfThreads > 1)
     {
-        m_nNumOfThreads = numOfThreads;
+        if (numOfThreads > (int)m_vOriginalHouses.size())
+        {
+            m_nNumOfThreads = m_vOriginalHouses.size();
+        }
+        else
+        {
+            m_nNumOfThreads = numOfThreads;
+        }
     }
 }
 
@@ -241,6 +248,7 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
             }
 
             int nParam = atoi(trim(tokens[1]).c_str());
+
         	m_config[trim(tokens[0])] = nParam;
 
             if(nParam <= 0)
@@ -301,6 +309,12 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
 
         throw InnerException(strError);
     }
+
+    if(nBadCount != 0)
+    {
+        	string strError = "\n" + string("config.ini having bad values for ") + to_string(nBadCount) + std::string(" parameter(s): ") + strBadParams;
+        	throw InnerException(strError);
+    }
 }
 
 void Simulator::LoadScoreFile(const string &sScoreFilePath)
@@ -336,7 +350,7 @@ void Simulator::LoadScoreFile(const string &sScoreFilePath)
                 dlclose(pDlib);
                 throw  InnerException(strError);
             }
-		
+
             m_bIsDefaultScore = false;
         }
     }
@@ -540,31 +554,31 @@ void Simulator::RunOnHouseThread()
                 oScores[oSim->getAlgoFileName()][pHouse->GetHouseFileName()] = nScore;
                 m_mScoreLock.unlock();
 
-		if(bDebug)
-		{
-			cout << oSim->getHouse() << endl;
+            if(bDebug)
+            {
+                cout << oSim->getHouse() << endl;
 
-			cout << "This simulation state: ";
-			switch(oSim->GetSimulationState())
-			{
-			case OneSimulation::SimulationStateType::AlgoMadeIllegalMove:
-				cout << "AlgoMadeIllegalMove"<< endl;
-				break;
-			case OneSimulation::SimulationStateType::Finished:
-				cout << "Finished"<< endl;
-				break;
-			case OneSimulation::SimulationStateType::OutOfBattery:
-				cout << "OutOfBattery"<< endl;
-				break;
-			case OneSimulation::SimulationStateType::Running:
-				cout << "Running"<< endl;
-				break;
-			}
+                cout << "This simulation state: ";
+                switch(oSim->GetSimulationState())
+                {
+                case OneSimulation::SimulationStateType::AlgoMadeIllegalMove:
+                    cout << "AlgoMadeIllegalMove"<< endl;
+                    break;
+                case OneSimulation::SimulationStateType::Finished:
+                    cout << "Finished"<< endl;
+                    break;
+                case OneSimulation::SimulationStateType::OutOfBattery:
+                    cout << "OutOfBattery"<< endl;
+                    break;
+                case OneSimulation::SimulationStateType::Running:
+                    cout << "Running"<< endl;
+                    break;
+                }
 
-			cout << "This simulation steps: " << oSim->getSteps() << endl;
+                cout << "This simulation steps: " << oSim->getSteps() << endl;
 
-			cout << endl;
-		}
+                cout << endl;
+            }
         }
 
         vSimulations.clear();
