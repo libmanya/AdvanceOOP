@@ -247,9 +247,19 @@ void Simulator::ReadConfig(const string &sConfigFilePath)
                 tokens.push_back(item);
             }
 
-            int nParam = atoi(trim(tokens[1]).c_str());
-            string strKey = trim(tokens[0]);
-        	m_config[strKey] = nParam;
+            string temp = tokens[1];
+            int nParam;
+            string strKey;
+
+            if(temp.length() > 0){
+                nParam = atoi(trim(tokens[1]).c_str());
+                strKey = trim(tokens[0]);
+                m_config[strKey] = nParam;
+            }
+            else
+            {
+                nParam = 0;
+            }
 
             if((nParam <= 0) &&
                 ((strKey.compare(BATTERY_CAPACITY_KEY) == 0) ||
