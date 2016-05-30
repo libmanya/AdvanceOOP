@@ -112,12 +112,13 @@ Direction basic_smart::HandleClean()
 	BFS::BFSResult result;
 	BFS::run(result, m_oMatrix, m_oPos, { 'D' }, m_oNonWallChars);
 
-	if ((m_bAboutTofinish && m_stepsTillFinishing <= result.getDistance() + 1)				// number of steps left is less then number of steps it will take to get back to D + 1
-		|| m_nBatteryLevel / m_oConfig[BATTERY_CONSUMPTION_KEY] <= result.getDistance() + 1)// number of steps the battery will hold is less then number of steps it will take to get back to D + 1
-	{
-		m_oCurrentState = AlgoState::AdvanceToD;
-		return HandleAdvanceToD();
-	}
+        if(result.getDistance() != 0)
+		if ((m_bAboutTofinish && m_stepsTillFinishing <= result.getDistance() + 1)				// number of steps left is less then number of steps it will take to get back to D + 1
+			|| m_nBatteryLevel / m_oConfig[BATTERY_CONSUMPTION_KEY] <= result.getDistance() + 1)// number of steps the battery will hold is less then number of steps it will take to get back to D + 1
+		{
+			m_oCurrentState = AlgoState::AdvanceToD;
+			return HandleAdvanceToD();
+		}
 
 	if (!(m_oMatrix[m_oPos] >= '1' && m_oMatrix[m_oPos] <= '9'))
 	{
@@ -134,15 +135,16 @@ Direction basic_smart::HandleAdvanceToClean()
 	BFS::BFSResult result;
 	BFS::run(result, m_oMatrix, m_oPos, { 'D' }, m_oNonWallChars);
 
-	if ((m_bAboutTofinish && m_stepsTillFinishing <= result.getDistance() + 1)					// number of steps left is less then number of steps it will take to get back to D + 1
-		|| m_nBatteryLevel/m_oConfig[BATTERY_CONSUMPTION_KEY] <= result.getDistance() + 1		// number of steps the battery will hold is less then number of steps it will take to get back to D + 1
-		|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
-	{
-		m_bIsPathToCleanInit = false;
-
-		m_oCurrentState = AlgoState::AdvanceToD;
-		return HandleAdvanceToD();
-	}
+        if(result.getDistance() != 0)
+		if ((m_bAboutTofinish && m_stepsTillFinishing <= result.getDistance() + 1)					// number of steps left is less then number of steps it will take to get back to D + 1
+			|| m_nBatteryLevel/m_oConfig[BATTERY_CONSUMPTION_KEY] <= result.getDistance() + 1		// number of steps the battery will hold is less then number of steps it will take to get back to D + 1
+			|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
+		{
+			m_bIsPathToCleanInit = false;
+	
+			m_oCurrentState = AlgoState::AdvanceToD;
+			return HandleAdvanceToD();
+		}
 
 	if (!m_bIsPathToCleanInit)
 	{

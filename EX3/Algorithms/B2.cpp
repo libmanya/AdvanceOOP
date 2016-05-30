@@ -129,6 +129,9 @@ bool B2::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
 	BFS::BFSResult result;
 	BFS::run(result, m_oMatrix, oPos, { 'D' }, m_oNonWallChars);
 
+        if(result.getDistance() == 0)
+		return false;
+
 	double nMismatchFrequency = ((m_nSteps != 0) ? (((double)m_nMismatchCount) / ((double)m_nSteps)) : 0.0);
 
 	int stepsToGetBack = result.getDistance() + 1;

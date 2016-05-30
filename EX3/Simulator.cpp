@@ -727,6 +727,9 @@ Simulator::~Simulator()
     /*for(House *pHouse : m_vOriginalHouses)
         delete pHouse;*/
 
+	for(void* pHandle : m_vAlgoLibHandles)
+		dlclose(pHandle);
+
     if(!m_bIsDefaultScore)
     {
         dlclose(m_ptrScoreHandle);
