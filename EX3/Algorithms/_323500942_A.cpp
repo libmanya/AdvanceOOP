@@ -1,15 +1,15 @@
 /*
- * A1.cpp
+ * _323500942_A.cpp
  *
  *  Created on: 19 Mar 2016
  *      Author: iliyaaizin 323500942 & yaronlibman 302730072
  */
 
 #include <map>
-#include "A1.h"
+#include "_323500942_A.h"
 #include <cmath>
 
-Direction A1::step(Direction prevStep)
+Direction _323500942_A::step(Direction prevStep)
 {
 	//cout << m_oMatrix << endl;
 
@@ -120,7 +120,7 @@ Direction A1::step(Direction prevStep)
 	return oDir;
 }
 
-bool A1::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
+bool _323500942_A::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
 {
 	// run BFS to calculate distance to D
 	BFS::BFSResult result;
@@ -142,7 +142,7 @@ bool A1::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
 	return false;
 }
 
-Direction A1::HandleClean()
+Direction _323500942_A::HandleClean()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos))
 	{
@@ -351,7 +351,7 @@ bool oneLineDirtyAria(const vector<Point> &vFoundDirtyCells)
 	return true;
 }
 
-Direction A1::HandleExploreDirtyAria()
+Direction _323500942_A::HandleExploreDirtyAria()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos))
 	{
@@ -418,7 +418,7 @@ Direction A1::HandleExploreDirtyAria()
 	return Direction::Stay;
 }
 
-Direction A1::HandleAdvanceToClean()
+Direction _323500942_A::HandleAdvanceToClean()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos)
 		|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
@@ -508,7 +508,7 @@ Direction A1::HandleAdvanceToClean()
 	return Direction::Stay;
 }
 
-Direction A1::HandleAdvanceToD()
+Direction _323500942_A::HandleAdvanceToD()
 {
 	if (!m_bIsCurrentPathInit)
 	{
@@ -532,7 +532,7 @@ Direction A1::HandleAdvanceToD()
 	}
 }
 
-Direction A1::HandleAtD()
+Direction _323500942_A::HandleAtD()
 {
 	// checked if finished counting
 	if (m_nUnexploredOrDustyCellsCount == 0)
@@ -553,12 +553,12 @@ Direction A1::HandleAtD()
 	return HandleAdvanceToClean();
 }
 
-Direction A1::HandleFinish()
+Direction _323500942_A::HandleFinish()
 {
 	return Direction::Stay;
 }
 
-void A1::aboutToFinish(int stepsTillFinishing)
+void _323500942_A::aboutToFinish(int stepsTillFinishing)
 {
 	m_bAboutTofinish = true;
 	m_stepsTillFinishing = stepsTillFinishing;

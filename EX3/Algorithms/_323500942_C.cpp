@@ -1,5 +1,5 @@
 /*
- * C1.cpp
+ * _323500942_C.cpp
  *
  *  Created on: May 20, 2016
  *      Author: ilya
@@ -7,10 +7,10 @@
 
 
 #include <map>
-#include "C1.h"
+#include "_323500942_C.h"
 #include <cmath>
 
-bool C1::isWallOrUnknown(Point oPoint)
+bool _323500942_C::isWallOrUnknown(Point oPoint)
 {
 	if(m_oMatrix.exists(oPoint))
 	{
@@ -23,7 +23,7 @@ bool C1::isWallOrUnknown(Point oPoint)
 	return false;
 }
 
-Direction C1::step(Direction prevStep)
+Direction _323500942_C::step(Direction prevStep)
 {
 	//cout << m_oMatrix << endl;
 
@@ -37,6 +37,7 @@ Direction C1::step(Direction prevStep)
 		m_bIsCurrentPathInit = false;		// recalculate path
 		m_oCurrentState = AlgoState::FindWall;
 
+		m_oPrevStep = prevStep;
 		m_nMismatchCount++;
 	}
 
@@ -206,7 +207,7 @@ Direction C1::step(Direction prevStep)
 	return oDir;
 }
 
-Direction C1::HandleFindWall()
+Direction _323500942_C::HandleFindWall()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos)
 		|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
@@ -271,7 +272,7 @@ Direction C1::HandleFindWall()
 	return Direction::Stay;
 }
 
-Direction C1::HandleAdvanceToD()
+Direction _323500942_C::HandleAdvanceToD()
 {
 	if (!m_bIsCurrentPathInit)
 	{
@@ -295,7 +296,7 @@ Direction C1::HandleAdvanceToD()
 	}
 }
 
-Direction C1::HandleAtD()
+Direction _323500942_C::HandleAtD()
 {
 	// checked if finished counting
 	if (m_nUnexploredOrDustyCellsCount == 0)
@@ -317,7 +318,7 @@ Direction C1::HandleAtD()
 }
 
 
-Direction C1::HandleFollowWall()
+Direction _323500942_C::HandleFollowWall()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos)
 		|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
@@ -481,7 +482,7 @@ Direction C1::HandleFollowWall()
 	return Direction::Stay;
 }
 
-bool C1::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
+bool _323500942_C::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
 {
 	// run BFS to calculate distance to D
 	BFS::BFSResult result;
@@ -503,7 +504,7 @@ bool C1::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
 	return false;
 }
 
-bool C1::isAdjacentToWall(Point oPoint)
+bool _323500942_C::isAdjacentToWall(Point oPoint)
 {
 	// check whether adjacent to wall
 	vector<Point> vNeighbours;
@@ -520,12 +521,12 @@ bool C1::isAdjacentToWall(Point oPoint)
 	return false;
 }
 
-Direction C1::HandleFinish()
+Direction _323500942_C::HandleFinish()
 {
 	return Direction::Stay;
 }
 
-void C1::aboutToFinish(int stepsTillFinishing)
+void _323500942_C::aboutToFinish(int stepsTillFinishing)
 {
 	m_bAboutTofinish = true;
 	m_stepsTillFinishing = stepsTillFinishing;

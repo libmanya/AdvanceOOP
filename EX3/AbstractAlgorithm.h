@@ -26,7 +26,6 @@ public:
     virtual void aboutToFinish(int stepsTillFinishing) = 0;
 
     virtual ~AbstractAlgorithm(){};
-    int iliya = 5;
 };
 
 #endif //__ABSTRACT_ALGORITHM__H_

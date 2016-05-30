@@ -1,19 +1,12 @@
 /*
- * B2.h
+ * _323500942_C.h
  *
- *  Created on: May 19, 2016
+ *  Created on: May 20, 2016
  *      Author: ilya
  */
 
-#ifndef B2_H_
-#define B2_H_
-
-/*
- * B2.h
- *
- *  Created on: 19 Mar 2016
- *      Author: iliyaaizin 323500942 & yaronlibman 302730072
- */
+#ifndef _323500942_C_H_
+#define _323500942_C_H_
 
 #include "../Direction.h"
 #include "../AbstractAlgorithm.h"
@@ -25,7 +18,8 @@
 #include <cmath>
 #include "../makeUnique.h"
 #include "../AlgorithmRegistration.h"
-class B2 : public AbstractAlgorithm
+
+class _323500942_C : public AbstractAlgorithm
 {
 
 public:
@@ -33,7 +27,7 @@ public:
 
 private:
 
-	enum AlgoState { Clean, FindWall, FollowWall, AdvanceToD, AtD, Finished, ExploreDirtyAria };
+	enum AlgoState { FindWall, FollowWall, AdvanceToD, AtD, Finished };
 
 	const AbstractSensor *m_pSensor;
 	map<string, int> m_oConfig;
@@ -55,13 +49,15 @@ private:
 	Direction m_oPrevStep;
 	int m_nMismatchCount;
 
-	Point m_oLastDiscoveredDirtyAriaBorder;
-	unordered_map<Point, int> oVisitNumber;
-	vector<Point> m_vFoundDirtyCells;
+	//
+	Point m_oWallBeingFollowed;
+	bool m_bFirstPart = false;
+	Direction m_oWallDirection;
+	int m_nSteps2;
 
 public:
 
-	B2() : m_pSensor(nullptr), m_oPos({ 0, 0 })
+	_323500942_C() : m_pSensor(nullptr), m_oPos({ 0, 0 })
 	{
 		m_oNonWallChars = { ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'D' , 'C', '~'};
 		m_oMatrix[0][0] = 'D';
@@ -87,7 +83,7 @@ public:
 
 	void aboutToFinish(int stepsTillFinishing) override;
 
-	~B2() override {};
+	~_323500942_C() override {};
 
 private:
 
@@ -100,10 +96,9 @@ private:
 	Direction HandleExploreDirtyAria();
 
 	bool AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset = 0);
-	bool oneLineDirtyAria(const vector<Point> &vFoundDirtyCells);
 	bool isAdjacentToWall(Point oPoint);
+	bool isWallOrUnknown(Point oPoint);
 };
 
-REGISTER_ALGORITHM (B2)
-
-#endif /* B2_H_ */
+REGISTER_ALGORITHM (_323500942_C)
+#endif /* _323500942_C_H_ */

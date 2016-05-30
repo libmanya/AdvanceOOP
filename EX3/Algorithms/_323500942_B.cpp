@@ -1,15 +1,15 @@
 /*
- * B2.cpp
+ * _323500942_B.cpp
  *
  *  Created on: May 19, 2016
  *      Author: ilya
  */
 
 #include <map>
-#include "B2.h"
+#include "_323500942_B.h"
 #include <cmath>
 
-Direction B2::step(Direction prevStep)
+Direction _323500942_B::step(Direction prevStep)
 {
 	//cout << m_oMatrix << endl;
 
@@ -123,7 +123,7 @@ Direction B2::step(Direction prevStep)
 	return oDir;
 }
 
-bool B2::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
+bool _323500942_B::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
 {
 	// run BFS to calculate distance to D
 	BFS::BFSResult result;
@@ -145,7 +145,7 @@ bool B2::AboutToFinishOrLittleBattery(Point oPos, int nStepsOffset)
 	return false;
 }
 
-Direction B2::HandleClean()
+Direction _323500942_B::HandleClean()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos))
 	{
@@ -296,7 +296,7 @@ Direction B2::HandleClean()
 	return Direction::Stay;
 }
 
-bool B2::oneLineDirtyAria(const vector<Point> &vFoundDirtyCells)
+bool _323500942_B::oneLineDirtyAria(const vector<Point> &vFoundDirtyCells)
 {
 	Point oFirst = vFoundDirtyCells[0];
 	Point oSecond;
@@ -325,7 +325,7 @@ bool B2::oneLineDirtyAria(const vector<Point> &vFoundDirtyCells)
 	return true;
 }
 
-Direction B2::HandleExploreDirtyAria()
+Direction _323500942_B::HandleExploreDirtyAria()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos))
 	{
@@ -392,7 +392,7 @@ Direction B2::HandleExploreDirtyAria()
 	return Direction::Stay;
 }
 
-Direction B2::HandleAdvanceToD()
+Direction _323500942_B::HandleAdvanceToD()
 {
 	if (!m_bIsCurrentPathInit)
 	{
@@ -416,7 +416,7 @@ Direction B2::HandleAdvanceToD()
 	}
 }
 
-bool B2::isAdjacentToWall(Point oPoint)
+bool _323500942_B::isAdjacentToWall(Point oPoint)
 {
 	// check whether adjacent to wall
 	vector<Point> vNeighbours;
@@ -433,7 +433,7 @@ bool B2::isAdjacentToWall(Point oPoint)
 	return false;
 }
 
-Direction B2::HandleFindWall()
+Direction _323500942_B::HandleFindWall()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos)
 		|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
@@ -503,7 +503,7 @@ Direction B2::HandleFindWall()
 	return Direction::Stay;
 }
 
-Direction B2::HandleFollowWall()
+Direction _323500942_B::HandleFollowWall()
 {
 	if (AboutToFinishOrLittleBattery(m_oPos)
 		|| m_nUnexploredOrDustyCellsCount == 0)	// finished cleaning
@@ -556,7 +556,7 @@ Direction B2::HandleFollowWall()
 	return Direction::Stay;
 }
 
-Direction B2::HandleAtD()
+Direction _323500942_B::HandleAtD()
 {
 	// checked if finished counting
 	if (m_nUnexploredOrDustyCellsCount == 0)
@@ -577,12 +577,12 @@ Direction B2::HandleAtD()
 	return HandleFindWall();
 }
 
-Direction B2::HandleFinish()
+Direction _323500942_B::HandleFinish()
 {
 	return Direction::Stay;
 }
 
-void B2::aboutToFinish(int stepsTillFinishing)
+void _323500942_B::aboutToFinish(int stepsTillFinishing)
 {
 	m_bAboutTofinish = true;
 	m_stepsTillFinishing = stepsTillFinishing;
