@@ -976,6 +976,9 @@ int main(int argsc, char **argv)
 
         for(const string &sLogEntry : Logger::getLog(Logger::LogType::Scores, true))
             cout << sLogEntry << endl;
+
+        for(const string &sLogEntry : Logger::getLog(Logger::LogType::video, true))
+            cout << sLogEntry << endl;
     }
     catch (exception& ex)
     {
