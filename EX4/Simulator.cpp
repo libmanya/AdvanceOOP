@@ -538,10 +538,26 @@ void Simulator::RunOnHouseThread()
             {
                 for(size_t i = 0; i < vSimulations.size(); i++)
                 {
-                	unique_ptr<OneSimulation> &oSim = vSimulations[i];
+                    unique_ptr<OneSimulation> &oSim = vSimulations[i];
+                    int nErrors = oSim->getNumberOfFailedMontage();
+
+                    if(nErrors > 0)
+                    {
+                        string error = "Error: In the simulation " + oSim->getAlgoFileName() + " ," + oSim->getHouseFileName() + ": the creation of " + to_string(nErrors) + " images was failed";
+                        Logger::addLogMSG(error, Logger::LogType::video);
+                    }
+
+
                     string simulationDir =  "simulations/" + oSim->getAlgoFileName() + "_" + oSim->getHouseFileName() + "/";
                     string imagesExpression = simulationDir + "image%5d.jpg";
-                    Encoder::encode(imagesExpression, oSim->getAlgoFileName()  + "_" + oSim->getHouseFileName()  + ".mpg");
+                    int result = Encoder::encode(imagesExpression, oSim->getAlgoFileName()  + "_" + oSim->getHouseFileName()  + ".mpg");
+
+                    if(result == -1)
+                    {
+                        string error = "Error: In the simulation " + oSim->getAlgoFileName() + " ," + oSim->getHouseFileName() + ": video file creation failed";
+                        Logger::addLogMSG(error, Logger::LogType::video);
+                    }
+
                     oSim->deleteMontageFiles();
                 }
             }
@@ -908,6 +924,12 @@ int main(int argsc, char **argv)
             cout << USAGE << endl;
             return 1;
         }
+    }
+
+    if((bCreateVideo) && (nThreads > 1))
+    {
+     cout << "Cannot Create Video While running with more then 1 thread" << endl;
+     return 0;
     }
 
     sConfigPath = sConfigPath.length() == 0 ? "." : sConfigPath;

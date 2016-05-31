@@ -115,6 +115,10 @@ public:
         {
             m_oHouse.montage(getAlgoFileName(), getHouseFileName());
         }
+        int getNumberOfFailedMontage()
+        {
+            return m_oHouse.numberOfFailedMontage();
+        }
 
     private:
 

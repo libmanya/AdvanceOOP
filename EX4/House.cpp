@@ -276,14 +276,12 @@ bool House::isVacuumInDocking()const
     return((m_pMap[m_VacumPos.i][m_VacumPos.j]) == DOCKING_STATION_CELL);
 }
 
-void createDirectoryIfNotExists(const string& dirPath)
+int createDirectoryIfNotExists(const string& dirPath)
 {
   string cmd = "mkdir -p " + dirPath;
   int ret = system(cmd.c_str());
-  if (ret == -1)
-  {
-    //handle error
-  }
+  return ret;
+
 }
 
 void House::deleteMontageDir(const string& algoName, const string& houseName)
@@ -292,7 +290,7 @@ void House::deleteMontageDir(const string& algoName, const string& houseName)
   int ret = system(cmd.c_str());
   if (ret == -1)
   {
-    //handle error
+
   }
 }
 
@@ -319,12 +317,19 @@ void House::montage(const string& algoName, const string& houseName)
         }
 
         string imagesDirPath = "simulations/" + algoName + "_" + houseName;
-        createDirectoryIfNotExists(imagesDirPath);
+        int result = createDirectoryIfNotExists(imagesDirPath);
+
+          if (result == -1)
+          {
+             string error = "Error: In the simulation " + algoName + " ," + houseName + ": folder creation " + imagesDirPath + " failed";
+             Logger::addLogMSG(error, Logger::LogType::video);
+          }
+
         string counterStr = to_string(m_nMontageCounter++);
         string composedImage = imagesDirPath + "/image" + string(5-counterStr.length(), '0') + counterStr + ".jpg";
-        int result = Montage::compose(tiles, m_nColNumber, m_nRowNumber, composedImage);
+        int error = Montage::compose(tiles, m_nColNumber, m_nRowNumber, composedImage);
 
-        if(result == -1)
+        if(error == -1)
         {
             m_nMontageErrorCounter++;
         }

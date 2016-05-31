@@ -79,6 +79,10 @@ public:
     {
         return m_bisLoadFail;
     };
+    int numberOfFailedMontage() 		const
+    {
+        return m_nMontageErrorCounter;
+    };
     ~House();
 
 private:
