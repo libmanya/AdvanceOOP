@@ -21,6 +21,7 @@
 #include "AlgorithmRegistrar.h"
 #include "makeUnique.h"
 #include "AlgorithmRegistration.h"
+#include "Encoder.h"
 
 using namespace std;
 
@@ -29,6 +30,7 @@ bool bDebug = false;
 vector<string> Logger::vHousesLog;
 vector<string> Logger::vAlgosLog;
 vector<string> Logger::vScoresLog;
+vector<string> Logger::vVideoLog;
 AlgorithmRegistrar AlgorithmRegistrar::instance;
 
 typedef void * __attribute__ ((__may_alias__)) pvoid_may_alias_t;
@@ -179,7 +181,7 @@ int Simulator::LoadAlgoFilesToFactory(const vector<string> &vAlgoFilesPaths)
     return 0;
 }
 
-Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads)
+Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads, bool bCreateVideo)
 {
 
     vector<string> vDirAlgosFiles;
@@ -213,6 +215,8 @@ Simulator::Simulator(const string &sConfigFilePath, const string &sHousesPath , 
             m_nNumOfThreads = numOfThreads;
         }
     }
+
+    m_bCreateVideo = bCreateVideo;
 }
 
 // Reads configuration file and sets m_config keys
@@ -492,6 +496,11 @@ void Simulator::RunOnHouseThread()
 
                         oSim->MakeStep();
 
+                        if(m_bCreateVideo)
+                        {
+                            oSim->montageHouse();
+                        }
+
                         if(oSim->GetSimulationState() == OneSimulation::Finished)
                         {
                             // calculate Actual Position In Competition according to forum post by Amir
@@ -524,6 +533,19 @@ void Simulator::RunOnHouseThread()
 
                 nSimulationSteps++;
             }
+
+            if(m_bCreateVideo)
+            {
+                for(size_t i = 0; i < vSimulations.size(); i++)
+                {
+                	unique_ptr<OneSimulation> &oSim = vSimulations[i];
+                    string simulationDir =  "simulations/" + oSim->getAlgoFileName() + "_" + oSim->getHouseFileName() + "/";
+                    string imagesExpression = simulationDir + "image%5d.jpg";
+                    Encoder::encode(imagesExpression, oSim->getAlgoFileName()  + "_" + oSim->getHouseFileName()  + ".mpg");
+                    oSim->deleteMontageFiles();
+                }
+            }
+
 
             int nScore;
 
@@ -847,6 +869,7 @@ int main(int argsc, char **argv)
     string sAlgosPath = "";
     string sScorePath = "";
     int    nThreads = 1;
+    bool bCreateVideo = false;
 
     // Gets Command line parameters
     for (i = 1; i < argsc; i++)
@@ -875,6 +898,10 @@ int main(int argsc, char **argv)
         {
             if (i < (argsc - 1))
                 nThreads = atoi(argv[++i]);
+        }
+        else if (VIDEO_FLAG.compare(argv[i]) == 0)
+        {
+            bCreateVideo = true;
         }
         else
         {
@@ -911,7 +938,7 @@ int main(int argsc, char **argv)
 
     try
     {
-        Simulator sim(sConfigPath, sHousesPath, sAlgosPath, sScorePath, nThreads);
+        Simulator sim(sConfigPath, sHousesPath, sAlgosPath, sScorePath, nThreads, bCreateVideo);
         sim.Run();
 
         // if we reached this point that means Simulator didn't throw an exception

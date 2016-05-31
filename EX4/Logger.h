@@ -19,12 +19,13 @@ class Logger
     static vector<string> vHousesLog;
     static vector<string> vAlgosLog;
     static vector<string> vScoresLog;
+    static vector<string> vVideoLog;
 
 public:
 
     enum class LogType
     {
-        Houses, Algos, Scores
+        Houses, Algos, Scores, video
     };
 
     static const vector<string>& getLog(LogType oType, bool bSort = false)
@@ -43,6 +44,13 @@ public:
 
             return vAlgosLog;
         }
+        else if(oType == LogType::video)
+        {
+            if(bSort)
+                std::sort(vVideoLog.begin(), vVideoLog.end());
+
+            return vVideoLog;
+        }
         else
         {
             if(bSort)
@@ -58,6 +66,8 @@ public:
             vHousesLog.push_back(msg);
         else if(oType == LogType::Algos)
             vAlgosLog.push_back(msg);
+        else if(oType == LogType::video)
+            vVideoLog.push_back(msg);
         else
         	vScoresLog.push_back(msg);
 

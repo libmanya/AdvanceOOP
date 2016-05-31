@@ -10,6 +10,10 @@
 #include <algorithm>
 #include <cstring>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include "Montage.h"
 
 using namespace std;
 
@@ -272,3 +276,56 @@ bool House::isVacuumInDocking()const
     return((m_pMap[m_VacumPos.i][m_VacumPos.j]) == DOCKING_STATION_CELL);
 }
 
+void createDirectoryIfNotExists(const string& dirPath)
+{
+  string cmd = "mkdir -p " + dirPath;
+  int ret = system(cmd.c_str());
+  if (ret == -1)
+  {
+    //handle error
+  }
+}
+
+void House::deleteMontageDir(const string& algoName, const string& houseName)
+{
+  string cmd = "rm -r simulations/" + algoName + "_" + houseName;
+  int ret = system(cmd.c_str());
+  if (ret == -1)
+  {
+    //handle error
+  }
+}
+
+void House::montage(const string& algoName, const string& houseName)
+{
+        vector<string> tiles;
+        for (int row = 0; row < m_nRowNumber; ++row)
+        {
+          for (int col = 0; col < m_nColNumber; ++col)
+          {
+            if((row == m_VacumPos.i) &&(col == m_VacumPos.j))
+            {
+               tiles.push_back("R");
+            }
+            else if (m_pMap[row][col] == EMPTY_CELL)
+            {
+              tiles.push_back("0");
+            }
+            else
+            {
+              tiles.push_back(string() + m_pMap[row][col]);
+            }
+          }
+        }
+
+        string imagesDirPath = "simulations/" + algoName + "_" + houseName;
+        createDirectoryIfNotExists(imagesDirPath);
+        string counterStr = to_string(m_nMontageCounter++);
+        string composedImage = imagesDirPath + "/image" + string(5-counterStr.length(), '0') + counterStr + ".jpg";
+        int result = Montage::compose(tiles, m_nColNumber, m_nRowNumber, composedImage);
+
+        if(result == -1)
+        {
+            m_nMontageErrorCounter++;
+        }
+}

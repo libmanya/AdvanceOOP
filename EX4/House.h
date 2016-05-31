@@ -31,6 +31,8 @@ public:
     friend ostream& operator<<(ostream& out, const House& oHouse);
     void TryMoveVacuum(Direction oDir);
     bool isVacuumInDocking()const;
+    void montage(const string& algoName, const string& houseName);
+    void deleteMontageDir(const string& algoName, const string& houseName);
 
     // Getters
     const Point& GetVacuumPos() 		const
@@ -101,6 +103,9 @@ private:
     int m_BatteryCapacity;
     int m_BatteryConsumptionRate;
     int m_BatteryRechargeRate;
+
+    int m_nMontageCounter = 0;
+    int m_nMontageErrorCounter = 0;
 
     void TryCollectDirt();
 };

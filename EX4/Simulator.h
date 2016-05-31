@@ -25,6 +25,7 @@
 #define PATH_SEPARATOR '/'
 #endif
 
+const string VIDEO_FLAG = "-video";
 const string CONFIG_PATH_FLAG = "-config";
 const string HOUSE_PATH_FLAG = "-house_path";
 const string ALGO_PATH_FLAG = "-algorithm_path";
@@ -48,7 +49,7 @@ class Simulator
 
 public:
     //Simulator Ctor with (config file Path)
-    Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads);
+    Simulator(const string &sConfigFilePath, const string &sHousesPath , const string &sAlgosPath, const string &scorePath, int numOfThreads, bool bCreateVideo);
     ~Simulator();
     void Run();
 
@@ -106,6 +107,14 @@ public:
         {
             return m_sAlgoFileName;
         }
+        void deleteMontageFiles()
+        {
+            m_oHouse.deleteMontageDir(getAlgoFileName(), getHouseFileName());
+        }
+        void montageHouse()
+        {
+            m_oHouse.montage(getAlgoFileName(), getHouseFileName());
+        }
 
     private:
 
@@ -149,7 +158,7 @@ private:
     bool m_bIsScoreError = false;
     mutex m_mScoreErrorLock;
     void* m_ptrScoreHandle = nullptr;
-
+    bool m_bCreateVideo = false;
 };
 
 struct InnerException : public exception
