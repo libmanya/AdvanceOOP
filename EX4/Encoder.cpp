@@ -5,7 +5,7 @@
 
 int Encoder::encode(const string& imagesString, const string& videoOutput)
 {
-  string ffmpegCmd = "ffmpeg -y -loglevel quiet -i " + imagesString + " " + videoOutput;
+  string ffmpegCmd = "ffmpeg -y -i " + imagesString + " " + videoOutput;
   int ret = system(ffmpegCmd.c_str());
   return ret;
 }
