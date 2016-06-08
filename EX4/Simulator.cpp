@@ -772,6 +772,17 @@ Simulator::~Simulator()
     {
         dlclose(m_ptrScoreHandle);
     }
+
+	if(m_bCreateVideo)
+	{
+ 		 string cmd = "rm -r simulations";
+		  int ret = system(cmd.c_str());
+		  if (ret == -1)	
+		  {
+
+		  }
+	}
+	
 }
 
 // Make single simulation step
